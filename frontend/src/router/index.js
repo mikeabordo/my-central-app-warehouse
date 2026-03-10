@@ -20,7 +20,6 @@ import onsitePreparationRoutes from './modules/onsite-preparation'
 import inventoryAdjustmentsRoutes from './modules/inventory-adjustments'
 import reportsRoutes from './modules/reports'
 
-
 const routes = [
   ...authRoutes,
   ...dashboardRoutes,
@@ -36,14 +35,14 @@ const routes = [
   ...onsitePreparationRoutes,
   ...inventoryAdjustmentsRoutes,
   ...reportsRoutes,
-
 ]
 
 export const router = createRouter({
-  history: createWebHistory('/vuejs/template/'),
+  history: createWebHistory('/'),
   linkActiveClass: 'active',
   routes,
 })
+
 
 router.beforeEach((to, from, next) => {
   // Scroll to the top of the page

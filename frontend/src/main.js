@@ -24,7 +24,7 @@ import "weathericons/css/weather-icons.css";
 import "ionicons-npm/css/ionicons.css";
 import "@/assets/css/feather.css";
 import "@/assets/css/style.css";
-
+import "@/assets/css/tailwind.css";
 // Create and configure the app
 const app = createApp(App);
 

@@ -5,12 +5,20 @@
     <div class="page-wrapper">
       <div class="content">
         <!-- Page Header -->
-        <div class="page-header">
-          <div class="row">
-            <div class="col-sm-12">
-              <h4 class="page-title">Warehouse List</h4>
-            </div>
-            <h6 class="page-title">Manage your Warehouses</h6>
+        <div class="page-header justify-content-between">
+          <div class="page-title">
+            <h4>Warehouse List</h4>
+            <h6>Manage your Warehouses</h6>
+          </div>
+          <div class="page-btn">
+            <a
+              href="javascript:void(0);"
+              class="btn btn-added"
+              data-bs-toggle="modal"
+              data-bs-target="#add-warehouse"
+            >
+              <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Warehouse
+            </a>
           </div>
         </div>
 
@@ -63,11 +71,17 @@
       </div>
     </div>
   </div>
+  <add-new-warehouse></add-new-warehouse>
 </template>
 
 <script>
+import AddNewWarehouse from "@/components/modal/add-new-warehouse.vue";
+
 export default {
   name: "WarehouseList",
+  components: {
+    AddNewWarehouse,
+  },
   data() {
     return {
       headers: [
