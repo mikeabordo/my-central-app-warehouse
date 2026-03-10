@@ -1,0 +1,457 @@
+[
+  {
+    "tittle": "Main",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Dashboard",
+        "route": "/dashboard",
+        "icon": "grid"
+      }
+    ]
+  },
+  {
+    "tittle": "Warehouse Setup",
+    "active_link": "/warehouse-setup",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Warehouse List",
+        "icon": "archive",
+        "active_link": "/warehouse-setup/warehouse-list",
+        "route": "/warehouse-setup/warehouse-list",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Warehouse Mapping",
+        "icon": "map-pin",
+        "active_link": "/warehouse-setup/warehouse-mapping",
+        "route": "/warehouse-setup/warehouse-mapping",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Stock Monitoring",
+    "active_link": "/stock-monitoring",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Item List",
+        "icon": "align-left",
+        "route": "/stock-monitoring/item-list",
+        "active_link": "/stock-monitoring/item-list",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Item Pricing",
+        "icon": "database",
+        "active_link": "/stock-monitoring/item-pricing",
+        "route": "/stock-monitoring/item-pricing",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Item Location Mapping",
+        "icon": "map",
+        "active_link": "/stock-monitoring/item-location-mapping",
+        "route": "/stock-monitoring/item-location-mapping",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Stock by Location",
+        "icon": "book-open",
+        "route": "/stock-monitoring/stock-by-location",
+        "active_link": "/stock-monitoring/stock-by-location",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Stock Ledger (IN / OUT)",
+        "icon": "menu",
+        "active_link": "/stock-monitoring/stock-ledger",
+        "route": "/stock-monitoring/stock-ledger",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Stock Reservation",
+        "icon": "key",
+        "active_link": "/stock-monitoring/stock-reservation",
+        "route": "/stock-monitoring/stock-reservation",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Inbound",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Production Delivery",
+        "icon": "shopping-bag",
+        "route": "/inbound/production-delivery",
+        "active_link": "/inbound/production-delivery",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Receiving Log",
+        "icon": "shopping-cart",
+        "route": "/inbound/receiving-log",
+        "active_link": "/inbound/receiving-log",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Branch Fulfillment",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Order List",
+        "icon": "briefcase",
+        "route": "/branch-fulfillment/order-list",
+        "active_link": "/branch-fulfillment/order-list",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "In-Transit",
+        "icon": "edit",
+        "route": "/branch-fulfillment/in-transit",
+        "active_link": "/branch-fulfillment/in-transit",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Delivered",
+        "icon": "truck",
+        "route": "/branch-fulfillment/delivered",
+        "active_link": "/branch-fulfillment/delivered",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Pull-Out Inventory",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Pull-Out Request",
+        "icon": "shopping-bag",
+        "route": "/pull-out/pull-out-request",
+        "active_link": "/pull-out/pull-out-request",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Inbound Pull-Outs",
+        "icon": "file-minus",
+        "route": "/pull-out/inbound-pull-out",
+        "active_link": "/pull-out/inbound-pull-out",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Completed Pull-Outs",
+        "icon": "refresh-cw",
+        "route": "/pull-out/completed-pull-out",
+        "active_link": "/pull-out/completed-pull-out",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Stock Transfer",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "New Transfer",
+        "icon": "corner-down-right",
+        "route": "/stock-transfer/new-transfer",
+        "active_link": "/stock-transfer/new-transfer",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Pending Transfer",
+        "icon": "crop",
+        "route": "/stock-transfer/pending-transfer",
+        "active_link": "/stock-transfer/pending-transfer",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Completed Transfer",
+        "icon": "cloud",
+        "route": "/stock-transfer/completed-transfer",
+        "active_link": "/stock-transfer/completed-transfer",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Invoice Picklist",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Pending Invoice Picklist",
+        "icon": "file",
+        "route": "/invoice-picklist/pending-invoice-picklist",
+        "active_link": "/invoice-picklist/pending-invoice-picklist",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Picked Orders",
+        "icon": "file-text",
+        "route": "/invoice-picklist/picked-orders",
+        "active_link": "/invoice-picklist/picked-orders",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Released Orders",
+        "icon": "folder",
+        "route": "/invoice-picklist/released-orders",
+        "active_link": "/invoice-picklist/released-orders",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "SKU Request",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "New SKU Request",
+        "icon": "book-open",
+        "route": "/sku-request/new-sku-request",
+        "active_link": "/sku-request/new-sku-request",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Fulfilled Request",
+        "icon": "book",
+        "route": "/sku-request/fulfilled-sku-request",
+        "active_link": "/sku-request/fulfilled-sku-request",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Special Stock Issuance",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "New Request Issuance",
+        "icon": "bar-chart",
+        "route": "/special-stock-issuance/new-request-issuance",
+        "active_link": "/special-stock-issuance/new-request-issuance",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Consignment Issuance",
+        "icon": "briefcase",
+        "route": "/special-stock-issuance/consignment-issuance",
+        "active_link": "/special-stock-issuance/consignment-issuance",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Complimentary Request",
+        "icon": "check-square",
+        "route": "/special-stock-issuance/complimentary-request",
+        "active_link": "/special-stock-issuance/complimentary-request",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Examination Issuance",
+        "icon": "check-circle",
+        "route": "/special-stock-issuance/examination-issuance",
+        "active_link": "/special-stock-issuance/examination-issuance",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Issuance History",
+        "icon": "cloud",
+        "route": "/special-stock-issuance/issuance-history",
+        "active_link": "/special-stock-issuance/issuance-history",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Onsite Preparation",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Onsite Event Preparation",
+        "icon": "codepen",
+        "route": "/onsite-preparation/onsite-event-preparation",
+        "active_link": "/onsite-preparation/onsite-event-preparation",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Stock Allocation",
+        "icon": "codesandbox",
+        "route": "/onsite-preparation/stock-allocation",
+        "active_link": "/onsite-preparation/stock-allocation",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Event Sales Return",
+        "icon": "copy",
+        "route": "/onsite-preparation/event-sales-return",
+        "active_link": "/onsite-preparation/event-sales-return",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Inventory Adjustments",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Adjustment Request",
+        "icon": "git-commit",
+        "route": "/inventory-adjustments/adjustment-request",
+        "active_link": "/inventory-adjustments/adjustment-request",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Approved Adjustments",
+        "icon": "git-merge",
+        "route": "/inventory-adjustments/approved-adjustments",
+        "active_link": "/inventory-adjustments/approved-adjustments",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Reports",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Stock by Location",
+        "icon": "bar-chart-2",
+        "route": "/reports/stock-by-location",
+        "active_link": "/reports/stock-by-location",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Movement Summary",
+        "icon": "pie-chart",
+        "route": "/reports/movement-summary",
+        "active_link": "/reports/movement-summary",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "SKU Request Fulfillment",
+        "icon": "inbox",
+        "route": "/reports/sku-request-fulfillment",
+        "active_link": "/reports/sku-request-fulfillment",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Complimentary / Exam Copies",
+        "icon": "folder",
+        "route": "/reports/complimentary-exam-copies",
+        "active_link": "/reports/complimentary-exam-copies",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Onsite Sales Reconciliation",
+        "icon": "hexagon",
+        "route": "/reports/onsite-sales-reconciliation",
+        "active_link": "/reports/onsite-sales-reconciliation",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "",
+        "icon": "",
+        "route": "",
+        "active_link": "",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "",
+        "icon": "",
+        "route": "",
+        "active_link": "",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "",
+        "icon": "",
+        "route": "",
+        "active_link": "",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  }
+]
