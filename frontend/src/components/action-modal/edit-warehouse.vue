@@ -1,12 +1,12 @@
 <template>
-  <div class="modal fade" id="add-warehouse">
+  <div class="modal fade" id="edit-warehouse">
     <div class="modal-dialog modal-dialog-centered custom-modal-two">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header border-0 custom-modal-header justify-content-between">
-              <div class="page-title">
-                <h4>Create Warehouse</h4>
+              <div class="page-title ">
+                <h4>Edit Warehouse</h4>
               </div>
               <button
                 type="button"
@@ -18,7 +18,11 @@
               </button>
             </div>
             <div class="modal-body custom-modal-body">
-              <form @submit.prevent="createWarehouse">
+              <form @submit.prevent="updateWarehouse">
+                <div class="mb-3">
+                  <label class="form-label">Warehouse Code</label>
+                  <input type="text" class="form-control bg-light" v-model="formData.whcode" disabled />
+                </div>
                 <div class="mb-3">
                   <label class="form-label">Branch Name</label>
                   <input type="text" class="form-control" v-model="formData.branchstorename" />
@@ -39,7 +43,7 @@
                   >
                     Cancel
                   </button>
-                  <button type="submit" class="btn btn-submit" data-bs-dismiss="modal">Submit</button>
+                  <button type="submit" class="btn btn-submit" data-bs-dismiss="modal">Save Changes</button>
                 </div>
               </form>
             </div>
@@ -52,25 +56,38 @@
 
 <script>
 export default {
-  name: "AddNewWarehouse",
+  name: "EditWarehouse",
+  props: {
+    warehouse: {
+      type: Object,
+      default: () => ({})
+    }
+  },
   data() {
     return {
       formData: {
+        whcode: '',
         branchstorename: '',
         branchaddress: '',
-        branchcontact: ''
+        branchcontact: '',
+        id: null
       }
     };
   },
+  watch: {
+    warehouse: {
+      handler(newVal) {
+        if (newVal) {
+          this.formData = { ...newVal };
+        }
+      },
+      deep: true,
+      immediate: true
+    }
+  },
   methods: {
-    createWarehouse() {
-      this.$emit('create', this.formData);
-      // Optional: reset form data after submission
-      this.formData = {
-        branchstorename: '',
-        branchaddress: '',
-        branchcontact: ''
-      };
+    updateWarehouse() {
+      this.$emit('update', this.formData);
     }
   }
 };

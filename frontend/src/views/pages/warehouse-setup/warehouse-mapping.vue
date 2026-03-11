@@ -18,41 +18,45 @@
           <div class="col-sm-12">
             <div class="card">
               <div class="card-body">
-                <div class="table-responsive">
-                  <table class="datatable table table-hover table-center mb-0">
-                    <thead>
-                      <tr>
-                        <th>Warehouse Name</th>
-                        <th>Warehouse Code</th>
-                        <th>Warehouse Type</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="warehouse in warehouses" :key="warehouse.id">
-                        <td>{{ warehouse.name }}</td>
-                        <td>{{ warehouse.code }}</td>
-                        <td>{{ warehouse.type }}</td>
-                        <td>
-                          <span :class="['badge', warehouse.status === 'Active' ? 'badge-success' : 'badge-danger']">
-                            {{ warehouse.status }}
-                          </span>
-                        </td>
-                        <td class="text-end">
-                          <div class="actions">
-                            <a class="btn btn-sm bg-success-light" href="javascript:void(0);">
-                              <i class="fe fe-pencil"></i> Edit
-                            </a>
-                            <a class="btn btn-sm bg-danger-light" href="javascript:void(0);">
-                              <i class="fe fe-trash"></i> Delete
-                            </a>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                <dynamic-data-table
+                  :headers="headers"
+                  :items="warehouses"
+                  searchPlaceholder="Search warehouse mapping..."
+                >
+                  <!-- Status column with badge -->
+                  <template #item-status="{ status }">
+                    <span
+                      :class="[
+                        'badge',
+                        status === 'Active'
+                          ? 'badge-success'
+                          : 'badge-danger',
+                      ]"
+                    >
+                      {{ status }}
+                    </span>
+                  </template>
+
+                  <!-- Actions column -->
+                  <template #item-actions="{ item }">
+                    <div class="actions">
+                      <button
+                        type="button"
+                        class="btn btn-sm bg-success-dark me-1"
+                        @click="editWarehouse(item)"
+                      >
+                        <vue-feather type="edit" class="action-edit"></vue-feather>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-sm bg-danger-light"
+                        @click="deleteWarehouse(item.id)"
+                      >
+                        <vue-feather type="trash-2" class="action-delete"></vue-feather>
+                      </button>
+                    </div>
+                  </template>
+                </dynamic-data-table>
               </div>
             </div>
           </div>
@@ -63,30 +67,54 @@
 </template>
 
 <script>
+import DynamicDataTable from "@/components/DynamicDataTable.vue";
+
 export default {
   name: "WarehouseMapping",
+  components: {
+    DynamicDataTable,
+  },
   data() {
     return {
+      headers: [
+        { text: "ID", value: "id", sortable: true},
+        { text: "Warehouse Name", value: "name", sortable: true },
+        { text: "Location Code", value: "location_code", sortable: true },
+        { text: "Zone", value: "zone", sortable: true },
+        { text: "Aisle", value: "aisle", sortable: true },
+        { text: "Rack", value: "rack", sortable: true },
+        { text: "Bin", value: "bin", sortable: true },
+        { text: "Actions", value: "actions", sortable: false },
+      ],
       warehouses: [
         {
           id: 1,
           name: "Main Warehouse",
-          code: "WH-001",
-          type: "Main",
+          location_code: "926",
+          zone: "Zone 1",
+          aisle: "Aisle 1",
+          rack: "Rack 1",
+          bin: "Bin 1",
           status: "Active"
         },
         {
           id: 2,
           name: "Secondary Warehouse",
-          code: "WH-002",
-          type: "Secondary",
+          location_code: "927",
+          zone: "Zone 2",
+          aisle: "Aisle 2",
+          rack: "Rack 2",
+          bin: "Bin 2",
           status: "Active"
         },
         {
           id: 3,
           name: "Damaged Warehouse",
-          code: "WH-003",
-          type: "Damaged",
+          location_code: "928",
+          zone: "Zone 3",
+          aisle: "Aisle 3",
+          rack: "Rack 3",
+          bin: "Bin 3",
           status: "Inactive"
         }
       ]
@@ -94,6 +122,68 @@ export default {
   },
   mounted() {
     
-  }
+  },
+  methods: {
+    editWarehouse(warehouse) {
+      console.log("Editing warehouse mapping:", warehouse);
+      // Logic for editing
+    },
+    deleteWarehouse(id) {
+      if (confirm("Are you sure you want to delete this warehouse mapping?")) {
+        this.warehouses = this.warehouses.filter((w) => w.id !== id);
+      }
+    },
+  },
 };
 </script>
+
+<style scoped>
+.badge-success {
+  background-color: #22cc62;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.badge-danger {
+  background-color: #fc3d39;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.actions .btn {
+  font-size: 13px;
+  padding: 3px 6px;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.actions .btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.bg-success-dark {
+  background-color: rgba(34, 204, 98, 0.1);
+  color: #22cc62;
+}
+
+.bg-danger-light {
+  background-color: rgba(252, 61, 57, 0.1);
+  color: #fc3d39;
+}
+
+:deep(.action-edit) {
+  width: 16px;
+  height: 14px;
+}
+
+:deep(.action-delete) {
+  width: 16px;
+  height: 14px;
+}
+</style>
