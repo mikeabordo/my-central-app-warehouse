@@ -7,7 +7,8 @@
         <div class="page-header">
           <div class="row">
             <div class="col-sm-12">
-              <h4 class="page-title">Item Pricing</h4>
+              <h4 class="page-title">Item Pricing Master</h4>
+              <h6>Manage Item Pricing</h6>
             </div>
           </div>
         </div>
@@ -15,18 +16,94 @@
           <div class="col-sm-12">
             <div class="card">
               <div class="card-body">
-                <p>Item Pricing page content goes here.</p>
-              </div>
+                <dynamic-data-table
+                  :headers="headers"
+                  :items="items"
+                  searchPlaceholder="Search items..."
+                >
+                  <!-- We can add specific scoped slots for items here if needed -->
+                  <template #item-actions="{ item }">
+                    <div class="actions">
+                      <button 
+                      type="button"
+                      class="btn btn-sm btn-primary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#view-item"
+                      @click="viewItem(item)"
+                      >
+                      View
+                    </button>
+                    </div>
+                  </template>
+                </dynamic-data-table>
+              </div>  
             </div>
           </div>
         </div>
       </div>
     </div>
+    <view-item-modal
+      modal-id="view-item"
+      title="View Item"
+      :item="selectedItem"
+      :fields="viewItemFields"
+    />
   </div>
 </template>
 
 <script>
+import ViewItemModal from "@/components/action-modal/view-item-modal.vue";
+
 export default {
-  name: "ItemPricing",
+  name: "ItemList",
+  components: {
+    ViewItemModal,
+  },
+  data() {
+    return {
+      selectedItem: {},
+      viewItemFields: [
+        { label: "SKU",           key: "sku" },
+        { label: "Product",       key: "product" },
+        { label: "Edition",       key: "edition" },
+      ],
+      headers: [
+        { text: "#", value: "index", sortable: false },
+        { text: "SKU", value: "sku", sortable: true },
+        { text: "Product", value: "product", sortable: true },
+        { text: "Edition", value: "edition", sortable: true },
+        { text: "Actions", value: "actions", sortable: false },
+      ],
+      items: [
+        {
+          index: 1,
+          sku: "ITM-001",
+          product: "Laptop Pro X",
+          edition: "Electronics",
+        },
+        {
+          index: 2,
+          sku: "ITM-002",
+          product: "Wireless Mouse M3",
+          edition: "Accessories",
+        },
+        {
+          index: 3,
+          sku: "ITM-003",
+          product: "Desk Chair Ergonomic",
+          edition: "Furniture",
+        },
+      ],
+    };
+  },
+  methods: {
+    viewItem(item) {
+      this.selectedItem = { ...item };
+    },
+  },
 };
 </script>
+
+<style scoped>
+
+</style>

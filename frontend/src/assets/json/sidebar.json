@@ -182,14 +182,6 @@
     "separateRoute": false,
     "menu": [
       {
-        "menuValue": "New Transfer",
-        "icon": "corner-down-right",
-        "route": "/stock-transfer/new-transfer",
-        "active_link": "/stock-transfer/new-transfer",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
         "menuValue": "Pending Transfer",
         "icon": "crop",
         "route": "/stock-transfer/pending-transfer",
@@ -202,6 +194,14 @@
         "icon": "cloud",
         "route": "/stock-transfer/completed-transfer",
         "active_link": "/stock-transfer/completed-transfer",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Cancelled Transfer",
+        "icon": "x-circle",
+        "route": "/stock-transfer/cancelled-transfer",
+        "active_link": "/stock-transfer/cancelled-transfer",
         "hasSubRoute": false,
         "showSubRoute": false
       }

@@ -7,8 +7,8 @@
         <div class="page-header">
           <div class="row">
             <div class="col-sm-12">
-              <h4 class="page-title">Completed Transfer</h4>
-              <h6>Manage Completed Transfer</h6>
+              <h4 class="page-title">Cancelled Transfer</h4>
+              <h6>Manage Cancelled Transfer</h6>
             </div>
           </div>
         </div>
@@ -57,8 +57,9 @@
 
 <script>
 
+
 export default {
-  name: "CompletedTransfer",
+  name: "CancelledTransfer",
   components: {
  
   },

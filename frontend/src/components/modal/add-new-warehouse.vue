@@ -1,12 +1,12 @@
 <template>
-  <div class="modal fade" id="add-warehouse">
+  <div class="modal fade" :id="modalId">
     <div class="modal-dialog modal-dialog-centered custom-modal-two">
       <div class="modal-content">
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header border-0 custom-modal-header justify-content-between">
               <div class="page-title">
-                <h4>Create Warehouse</h4>
+                <h4>{{ title }}</h4>
               </div>
               <button
                 type="button"
@@ -18,18 +18,19 @@
               </button>
             </div>
             <div class="modal-body custom-modal-body">
-              <form @submit.prevent="createWarehouse">
-                <div class="mb-3">
-                  <label class="form-label">Branch Name</label>
-                  <input type="text" class="form-control" v-model="formData.branchstorename" />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Branch Address</label>
-                  <input type="text" class="form-control" v-model="formData.branchaddress" />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Branch Contact</label>
-                  <input type="text" class="form-control" v-model="formData.branchcontact" />
+              <form @submit.prevent="handleSubmit">
+                <div
+                  v-for="field in fields"
+                  :key="field.key"
+                  class="mb-3"
+                >
+                  <label class="form-label">{{ field.label }}</label>
+                  <input
+                    :type="field.type || 'text'"
+                    class="form-control"
+                    v-model="formData[field.key]"
+                    :placeholder="field.placeholder || ''"
+                  />
                 </div>
                 <div class="modal-footer-btn">
                   <button
@@ -39,7 +40,13 @@
                   >
                     Cancel
                   </button>
-                  <button type="submit" class="btn btn-submit" data-bs-dismiss="modal">Submit</button>
+                  <button
+                    type="submit"
+                    class="btn btn-submit"
+                    data-bs-dismiss="modal"
+                  >
+                    {{ submitLabel }}
+                  </button>
                 </div>
               </form>
             </div>
@@ -53,26 +60,74 @@
 <script>
 export default {
   name: "AddNewWarehouse",
+  props: {
+    /**
+     * The Bootstrap modal ID (without the #).
+     * Must match the data-bs-target on the trigger button.
+     * Example: "add-warehouse"
+     */
+    modalId: {
+      type: String,
+      required: true,
+    },
+    /**
+     * The heading displayed in the modal header.
+     * Example: "Create Warehouse"
+     */
+    title: {
+      type: String,
+      default: "Add New",
+    },
+    /**
+     * Label for the submit button.
+     * Example: "Submit" or "Create"
+     */
+    submitLabel: {
+      type: String,
+      default: "Submit",
+    },
+    /**
+     * Field definitions to render in the form.
+     * Each entry: { label, key, type?, placeholder? }
+     * Example:
+     *   { label: "Branch Name",    key: "branchstorename" }
+     *   { label: "Branch Address", key: "branchaddress" }
+     */
+    fields: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  emits: ["create"],
   data() {
     return {
-      formData: {
-        branchstorename: '',
-        branchaddress: '',
-        branchcontact: ''
-      }
+      formData: {},
     };
   },
+  watch: {
+    fields: {
+      handler(newFields) {
+        // Re-initialise formData keys whenever fields change
+        const fresh = {};
+        newFields.forEach((f) => {
+          fresh[f.key] = "";
+        });
+        this.formData = fresh;
+      },
+      immediate: true,
+    },
+  },
   methods: {
-    createWarehouse() {
-      this.$emit('create', this.formData);
-      // Optional: reset form data after submission
-      this.formData = {
-        branchstorename: '',
-        branchaddress: '',
-        branchcontact: ''
-      };
-    }
-  }
+    handleSubmit() {
+      this.$emit("create", { ...this.formData });
+      // Reset form after submission
+      const fresh = {};
+      this.fields.forEach((f) => {
+        fresh[f.key] = "";
+      });
+      this.formData = fresh;
+    },
+  },
 };
 </script>
 

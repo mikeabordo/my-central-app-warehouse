@@ -85,18 +85,20 @@ export default {
 
 .customize-table {
   --easy-table-header-font-size: 14px;
-  --easy-table-header-font-color: #1b2559;
-  --easy-table-header-background-color: #f8f9fa;
+  --easy-table-header-font-color: #67748e;
 
   --easy-table-body-row-font-size: 14px;
   --easy-table-body-row-font-color: #333;
   --easy-table-body-row-background-color: #fff;
   --easy-table-body-row-hover-background-color: #f5f5ff;
+  --easy-table-body-row-height: 80px;
 
   --easy-table-row-border: 1px solid #e8e8e8;
 
   --easy-table-footer-font-size: 13px;
   --easy-table-footer-font-color: #666;
   --easy-table-footer-background-color: #fff;
+
+  padding: 15px;
 }
 </style>

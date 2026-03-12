@@ -21,62 +21,99 @@
                   searchPlaceholder="Search items..."
                 >
                   <!-- We can add specific scoped slots for items here if needed -->
-                  <template #item-status="{ status }">
-                    <span
-                      :class="[
-                        'badge',
-                        status === 'In Stock' ? 'badge-success' : 'badge-danger',
-                      ]"
-                    >
-                      {{ status }}
-                    </span>
+                  <template #item-actions="{ item }">
+                    <div class="actions">
+                      <button 
+                      type="button"
+                      class="btn btn-sm btn-primary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#view-item"
+                      @click="viewItem(item)"
+                      >
+                      View
+                    </button>
+                    </div>
                   </template>
                 </dynamic-data-table>
-              </div>
+              </div>  
             </div>
           </div>
         </div>
       </div>
     </div>
+    <view-item-modal
+      modal-id="view-item"
+      title="View Item"
+      :item="selectedItem"
+      :fields="viewItemFields"
+    />
   </div>
 </template>
 
 <script>
+import ViewItemModal from "@/components/action-modal/view-item-modal.vue";
+
 export default {
   name: "ItemList",
+  components: {
+    ViewItemModal,
+  },
   data() {
     return {
+      selectedItem: {},
+      viewItemFields: [
+        { label: "SKU",           key: "sku" },
+        { label: "Product",       key: "product" },
+        { label: "Edition",       key: "edition" },
+        { label: "ISBN",          key: "isbn" },
+        { label: "Page No.",      key: "page_no" },
+        { label: "Regular Price", key: "regular_price" },
+      ],
       headers: [
-        { text: "Item Code", value: "code", sortable: true },
-        { text: "Item Name", value: "name", sortable: true },
-        { text: "Category", value: "category", sortable: true },
-        { text: "Quantity", value: "quantity", sortable: true },
-        { text: "Status", value: "status", sortable: true },
+        { text: "#", value: "index", sortable: false },
+        { text: "SKU", value: "sku", sortable: true },
+        { text: "Product", value: "product", sortable: true },
+        { text: "Edition", value: "edition", sortable: true },
+        { text: "ISBN", value: "isbn", sortable: true },
+        { text: "Page No.", value: "page_no", sortable: true },
+        { text: "Regular Price", value: "regular_price", sortable: true },
+        { text: "Actions", value: "actions", sortable: true },
       ],
       items: [
         {
-          code: "ITM-001",
-          name: "Laptop Pro X",
-          category: "Electronics",
-          quantity: 45,
-          status: "In Stock",
+          index: 1,
+          sku: "ITM-001",
+          product: "Laptop Pro X",
+          edition: "Electronics",
+          isbn: "45",
+          page_no: "In Stock",
+          regular_price: "In Stock",
         },
         {
-          code: "ITM-002",
-          name: "Wireless Mouse M3",
-          category: "Accessories",
-          quantity: 0,
-          status: "Out of Stock",
+          index: 2,
+          sku: "ITM-002",
+          product: "Wireless Mouse M3",
+          edition: "Accessories",
+          isbn: "0",
+          page_no: "Out of Stock",
+          regular_price: "In Stock",
         },
         {
-          code: "ITM-003",
-          name: "Desk Chair Ergonomic",
-          category: "Furniture",
-          quantity: 12,
-          status: "In Stock",
+          index: 3,
+          sku: "ITM-003",
+          product: "Desk Chair Ergonomic",
+          edition: "Furniture",
+          isbn: "12",
+          page_no: "In Stock",
+          regular_price: "In Stock",
         },
       ],
     };
+  },
+  methods: {
+    viewItem(item) {
+      this.selectedItem = { ...item };
+    },
   },
 };
 </script>

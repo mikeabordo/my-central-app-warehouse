@@ -2,9 +2,9 @@
  * Stock Transfer Routes
  */
 import { RouterView } from 'vue-router'
-import NewTransfer from '@/views/pages/stock-transfer/new-transfer.vue'
 import PendingTransfer from '@/views/pages/stock-transfer/pending-transfer.vue'
 import CompletedTransfer from '@/views/pages/stock-transfer/completed-transfer.vue'
+import CancelledTransfer from '@/views/pages/stock-transfer/cancelled-transfer.vue'
 
 export default [
     {
@@ -13,12 +13,7 @@ export default [
         children: [
             {
                 path: '',
-                redirect: 'new-transfer'
-            },
-            {
-                path: 'new-transfer',
-                name: 'new-transfer',
-                component: NewTransfer
+                redirect: 'pending-transfer'
             },
             {
                 path: 'pending-transfer',
@@ -29,6 +24,11 @@ export default [
                 path: 'completed-transfer',
                 name: 'completed-transfer',
                 component: CompletedTransfer
+            },
+            {
+                path: 'cancelled-transfer',
+                name: 'cancelled-transfer',
+                component: CancelledTransfer
             },
         ]
     }

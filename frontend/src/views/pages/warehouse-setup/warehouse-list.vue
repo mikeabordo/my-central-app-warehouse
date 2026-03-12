@@ -67,8 +67,20 @@
       </div>
     </div>
   </div>
-  <add-new-warehouse @create="handleAddWarehouse"></add-new-warehouse>
-  <edit-warehouse :warehouse="selectedWarehouse" @update="handleUpdateWarehouse"></edit-warehouse>
+  <add-new-warehouse
+    modal-id="add-warehouse"
+    title="Create Warehouse"
+    submit-label="Submit"
+    :fields="addWarehouseFields"
+    @create="handleAddWarehouse"
+  />
+  <edit-warehouse
+    modal-id="edit-warehouse"
+    title="Edit Warehouse"
+    :item="selectedWarehouse"
+    :fields="editWarehouseFields"
+    @update="handleUpdateWarehouse"
+  />
 </template>
 
 <script>
@@ -86,6 +98,17 @@ export default {
   },
   data() {
     return {
+      addWarehouseFields: [
+        { label: "Branch Name",    key: "branchstorename", placeholder: "Enter branch name" },
+        { label: "Branch Address", key: "branchaddress",   placeholder: "Enter branch address" },
+        { label: "Branch Contact", key: "branchcontact",   placeholder: "Enter branch contact" },
+      ],
+      editWarehouseFields: [
+        { label: "Warehouse Code", key: "whcode",          disabled: true },
+        { label: "Branch Name",    key: "branchstorename" },
+        { label: "Branch Address", key: "branchaddress"   },
+        { label: "Branch Contact", key: "branchcontact"   },
+      ],
       headers: [
         { text: "ID", value: "id", sortable: true},
         { text: "Warehouse Code", value: "whcode", sortable: true },
@@ -123,7 +146,6 @@ export default {
         // Refetch the entire list from the backend to ensure we have the new auto-generated ID 
         // and that it is fully in sync with the server database.
         await this.fetchWarehouses();
-        
       } catch (error) {
         console.error("Failed to add warehouse:", error);
       }

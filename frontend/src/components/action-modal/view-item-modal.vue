@@ -18,7 +18,7 @@
               </button>
             </div>
             <div class="modal-body custom-modal-body">
-              <form @submit.prevent="handleSubmit">
+              <div class="item-details">
                 <div
                   v-for="field in fields"
                   :key="field.key"
@@ -26,31 +26,22 @@
                 >
                   <label class="form-label">{{ field.label }}</label>
                   <input
-                    :type="field.type || 'text'"
+                    type="text"
                     class="form-control"
-                    :class="{ 'bg-light': field.disabled }"
-                    v-model="formData[field.key]"
-                    :disabled="field.disabled || false"
-                    :placeholder="field.placeholder || ''"
+                    :value="item[field.key]"
+                    disabled
                   />
                 </div>
                 <div class="modal-footer-btn">
                   <button
                     type="button"
-                    class="btn btn-cancel me-2"
+                    class="btn btn-cancel"
                     data-bs-dismiss="modal"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    class="btn btn-submit"
-                    data-bs-dismiss="modal"
-                  >
-                    Save Changes
+                    Close
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>
@@ -61,65 +52,41 @@
 
 <script>
 export default {
-  name: "EditWarehouse",
+  name: "ViewItemModal",
   props: {
     /**
      * The Bootstrap modal ID (without the #).
-     * Must match the data-bs-target on the trigger button.
-     * Example: "edit-warehouse"
+     * Must match the data-bs-target used in the trigger button.
+     * Example: "view-item"
      */
     modalId: {
       type: String,
       required: true,
     },
     /**
-     * The heading displayed in the modal header.
-     * Example: "Edit Warehouse"
+     * The heading displayed inside the modal header.
+     * Example: "View Item"
      */
     title: {
       type: String,
-      default: "Edit",
+      default: "View Details",
     },
     /**
-     * The data object to pre-populate the form.
-     * Keys must match the `key` values in the fields array.
+     * The data object whose keys are read by the fields array.
+     * Example: { sku: "ITM-001", product: "Laptop Pro X" }
      */
     item: {
       type: Object,
       default: () => ({}),
     },
     /**
-     * Field definitions to render in the form.
-     * Each entry: { label, key, type?, disabled?, placeholder? }
-     * Example:
-     *   { label: "Warehouse Code", key: "whcode", disabled: true }
-     *   { label: "Branch Name",    key: "branchstorename" }
+     * Array of field definitions to render.
+     * Each entry: { label: String, key: String }
+     * Example: [{ label: "SKU", key: "sku" }, { label: "Product", key: "product" }]
      */
     fields: {
       type: Array,
       default: () => [],
-    },
-  },
-  emits: ["update"],
-  data() {
-    return {
-      formData: {},
-    };
-  },
-  watch: {
-    item: {
-      handler(newVal) {
-        if (newVal) {
-          this.formData = { ...newVal };
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
-  },
-  methods: {
-    handleSubmit() {
-      this.$emit("update", { ...this.formData });
     },
   },
 };
@@ -129,9 +96,5 @@ export default {
 .form-control {
   border-width: 1px;
   border-color: gray;
-}
-.form-control:focus {
-  border-width: 2px;
-  border-color: #67748e;
 }
 </style>
