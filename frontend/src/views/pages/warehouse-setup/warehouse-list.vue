@@ -21,6 +21,7 @@
             </button>
           </div>
         </div>
+        <!-- end page header -->
 
         <!-- Warehouse List Table -->
         <div class="row">
@@ -52,7 +53,7 @@
                         type="button"
                         class="btn btn-sm bg-success-dark me-1"
                         data-bs-toggle="modal"
-                        data-bs-target="#edit-warehouse"
+                        data-bs-target="#edit-modal"
                         @click="editWarehouse(item)"
                       >
                         <vue-feather type="edit" class="action-edit"></vue-feather>
@@ -67,15 +68,15 @@
       </div>
     </div>
   </div>
-  <add-new-warehouse
+  <add-modal
     modal-id="add-warehouse"
     title="Create Warehouse"
     submit-label="Submit"
     :fields="addWarehouseFields"
     @create="handleAddWarehouse"
   />
-  <edit-warehouse
-    modal-id="edit-warehouse"
+  <edit-modal
+    modal-id="edit-modal"
     title="Edit Warehouse"
     :item="selectedWarehouse"
     :fields="editWarehouseFields"
@@ -84,16 +85,16 @@
 </template>
 
 <script>
-import AddNewWarehouse from "@/components/modal/add-new-warehouse.vue";
-import EditWarehouse from "@/components/action-modal/edit-warehouse.vue";
+import AddModal from "@/components/modal/add-modal.vue";
+import EditModal from "@/components/action-modal/edit-modal.vue";
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
 import api from "@/services/api";
 
 export default {
   name: "WarehouseList",
   components: {
-    AddNewWarehouse,
-    EditWarehouse,
+    AddModal,
+    EditModal,
     DynamicDataTable,
   },
   data() {

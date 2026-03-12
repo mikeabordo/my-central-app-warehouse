@@ -61,12 +61,12 @@
 
 <script>
 export default {
-  name: "EditWarehouse",
+  name: "EditModal",
   props: {
     /**
      * The Bootstrap modal ID (without the #).
      * Must match the data-bs-target on the trigger button.
-     * Example: "edit-warehouse"
+     * Example: "edit-modal"
      */
     modalId: {
       type: String,
