@@ -194,7 +194,7 @@
                 &.submenu-open {
                     ul {
                         border-bottom: 1px solid $gray-300;
-                        @include margin-padding(null, 0 0 14px 0);
+                        @include margin-padding(null, 0 8px 14px 0);
                         display: block;
 
                         li {

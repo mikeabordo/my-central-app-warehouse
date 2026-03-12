@@ -90,4 +90,12 @@ export default {
 #sidebar .scroll-area > .sidebar-menu {
   padding-right: 0.5px;
 }
+
+/* Fix: active tab background should not bleed to the right sidebar border */
+#sidebar-menu .submenu-open ul li.active a,
+#sidebar-menu .submenu-open ul li a:hover {
+  margin-right: 8px !important;
+  width: calc(100% - 24px) !important;
+  box-sizing: border-box !important;
+}
 </style>

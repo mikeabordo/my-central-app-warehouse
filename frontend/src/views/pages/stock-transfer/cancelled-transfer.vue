@@ -4,12 +4,20 @@
     <layout-sidebar></layout-sidebar>
     <div class="page-wrapper">
       <div class="content">
-        <div class="page-header">
-          <div class="row">
-            <div class="col-sm-12">
-              <h4 class="page-title">Cancelled Transfer</h4>
+        <div class="page-header justify-content-between">
+            <div class="page-title">
+              <h4>Cancelled Transfer</h4>
               <h6>Manage Cancelled Transfer</h6>
             </div>
+            <div class="page-btn">
+              <button
+                type="button"
+                class="btn btn-added"
+                data-bs-toggle="modal"
+                data-bs-target="#add-transfer"
+              >
+                <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Transfer
+              </button>
           </div>
         </div>
         <div class="row">
@@ -53,19 +61,76 @@
       </div>
     </div>
   </div>
+  <!-- Add New Transfer Modal -->
+  <add-modal
+    modal-id="add-transfer"
+    title="Add New Transfer"
+    submit-label="Submit"
+    size="lg"
+    :fields="addTransferFields"
+    @create="handleAddTransfer"
+  />
 </template>
 
 <script>
-
+import AddModal from '@/components/modal/add-modal.vue';
 
 export default {
   name: "CancelledTransfer",
   components: {
- 
+    AddModal
   },
   data() {
     return {
       isOwner: true,
+      addTransferFields: [
+        {
+          label: "Item",
+          key: "item_id",
+          type: "search",
+          endpoint: "/items/search",
+          labelKey: "name",
+          valueKey: "id",
+          placeholder: "Search item…",
+          minChars: 1,
+          debounce: 350,
+          col: 12,                          // column: full-width, prominent
+        },
+        {
+          label: "Reference No",
+          key: "ref",
+          type: "text",
+          placeholder: "Enter reference number",
+          col: 12,                          // column: full-width row
+        },
+        {
+          label: "Transfer Type",
+          key: "transfer_type",
+          type: "select",
+          placeholder: "Select transfer type",
+          col: 6,                           // grid: 2 dropdowns side-by-side
+          options: [
+            { value: "branch_to_branch",     label: "Branch to Branch" },
+            { value: "warehouse_to_branch",  label: "Warehouse to Branch" },
+            { value: "branch_to_warehouse",  label: "Branch to Warehouse" },
+          ],
+        },
+        {
+          label: "Status",
+          key: "status",
+          type: "select",
+          placeholder: "Select status",
+          col: 6,                           // grid: sits next to Transfer Type
+          options: ["Pending", "In Transit", "Completed", "Cancelled"],
+        },
+        {
+          label: "Remarks",
+          key: "remarks",
+          type: "text",
+          placeholder: "Enter remarks",
+          col: 12,                          // column: full-width row
+        },
+      ],
       headers: [
         { text: "#", value: "index", sortable: false },
         { text: "Ref", value: "ref", sortable: true },
