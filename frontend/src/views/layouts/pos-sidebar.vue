@@ -80,6 +80,7 @@ export default {
 }
 
 #sidebar .scroll-area > .ps__rail-y > .ps__thumb-y {
+  margin-right: 6px !important;
   width: 6px !important;
   right: 1px !important;
   background-color: rgba(0, 0, 0, 0.15) !important;
@@ -91,11 +92,18 @@ export default {
   padding-right: 0.5px;
 }
 
-/* Fix: active tab background should not bleed to the right sidebar border */
-#sidebar-menu .submenu-open ul li.active a,
-#sidebar-menu .submenu-open ul li a:hover {
+/* Fix: active tab background should not bleed to the right sidebar border (expanded sidebar only) */
+:not(.mini-sidebar) #sidebar-menu .submenu-open ul li.active a,
+:not(.mini-sidebar) #sidebar-menu .submenu-open ul li a:hover {
   margin-right: 8px !important;
   width: calc(100% - 24px) !important;
   box-sizing: border-box !important;
+}
+
+/* Reset for collapsed/mini-sidebar — don't shrink the icon link */
+.mini-sidebar #sidebar-menu .submenu-open ul li.active a,
+.mini-sidebar #sidebar-menu .submenu-open ul li a:hover {
+  margin-right: 0 !important;
+  width: 100% !important;
 }
 </style>

@@ -31,6 +31,7 @@
                 <dynamic-data-table
                   :headers="headers"
                   :items="warehouses"
+                  :loading="loading"
                   searchPlaceholder="Search warehouses..."
                 >
                   <!-- Status column with badge -->
@@ -120,6 +121,7 @@ export default {
       ],
       warehouses: [],
       selectedWarehouse: null,
+      loading: false,
     };
   },
   async created() {
@@ -127,6 +129,7 @@ export default {
   },
   methods: {
     async fetchWarehouses() {
+      this.loading = true;
       try {
         const responseData = await api.get('/warehouse/warehouse/list');
         // Ensure we always assign an Array to this.warehouses to prevent rendering crashes
@@ -134,12 +137,15 @@ export default {
         this.warehouses = Array.isArray(fetchedWarehouses) ? fetchedWarehouses : [];
       } catch (error) {
         console.error("Failed to fetch warehouses:", error);
+      } finally {
+        this.loading = false;
       }
     },
     addWarehouse() {
       this.selectedWarehouse = null;
     },
     async handleAddWarehouse(newData) {
+      this.loading = true;
       try {
         // Post new data
         await api.post('/warehouse/warehouse', newData);
@@ -149,12 +155,15 @@ export default {
         await this.fetchWarehouses();
       } catch (error) {
         console.error("Failed to add warehouse:", error);
+      } finally {
+        this.loading = false;
       }
     },
     editWarehouse(warehouse) {
       this.selectedWarehouse = { ...warehouse };
     },
     async handleUpdateWarehouse(updatedData) {
+      this.loading = true;
       try {
         // TODO: Update the endpoint URL and method as per your backend
         await api.put(`/warehouse/warehouse/${updatedData.id}`, updatedData);
@@ -165,6 +174,8 @@ export default {
         }
       } catch (error) {
         console.error("Failed to update warehouse:", error);
+      } finally {
+        this.loading = false;
       }
     }
   },

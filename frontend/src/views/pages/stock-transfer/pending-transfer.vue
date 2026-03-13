@@ -29,10 +29,11 @@
                 <dynamic-data-table
                   :headers="headers"
                   :items="items"
+                  :loading="loading"
                   searchPlaceholder="Search items..."
                 >
                   <!-- We can add specific scoped slots for items here if needed -->
-                  <template #item-actions="{ item }">
+                  <template #item-actions=" item ">
                     <div class="actions">
                       <button
                         type="button"
@@ -44,14 +45,24 @@
                         Print
                       </button>
                       <button
-                        v-if="isOwner"
+                        v-if="item.isOwner"
                         type="button"
                         class="btn btn-sm btn-warning ms-1"
                         data-bs-toggle="modal"
-                        data-bs-target="#edit-item"
+                        data-bs-target="#edit-transfer"
                         @click="editItem(item)"
                       >
                         Edit
+                      </button>
+                      <button
+                        v-if="item.isOwner"
+                        type="button"
+                        class="btn btn-sm btn-danger ms-1"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cancel-transfer"
+                        @click="cancelItem(item)"
+                      >
+                        Cancel
                       </button>
                     </div>
                   </template>
@@ -73,20 +84,46 @@
     :fields="addTransferFields"
     @create="handleAddTransfer"
   />
+
+  <cancel-modal
+    modal-id="cancel-transfer"
+    title="Cancel Transfer"
+    :message="`Are you sure you want to cancel this transfer?`"
+    :details="selectedItem ? `Reference: ${selectedItem.stfNo || ''}` : ''"
+    :item="selectedItem"
+    confirm-label="Yes, cancel"
+    cancel-label="No"
+    @confirm="handleCancelConfirm"
+  />
+
+  <!-- Edit Transfer Modal -->
+  <edit-modal
+    modal-id="edit-transfer"
+    title="Edit Transfer"
+    :item="selectedItem || {}"
+    :fields="addTransferFields"
+    @update="handleEditTransfer"
+  />
 </template>
 
 <script>
 import AddModal from "@/components/modal/add-modal.vue";
+import CancelModal from "@/components/action-modal/cancel-modal.vue";
+import EditModal from "@/components/action-modal/edit-modal.vue";
 import api from "@/services/api";
 
 export default {
   name: "PendingTransfer",
   components: {
     AddModal,
+    CancelModal,
+    EditModal,
   },
   data() {
     return {
-      isOwner: true,
+      items: [],
+      selectedItem: null,
+      loading: false,
       addTransferFields: [
         {
           label: "Item",
@@ -108,24 +145,20 @@ export default {
           col: 12,                          // column: full-width row
         },
         {
-          label: "Transfer Type",
-          key: "transfer_type",
+          label: "From Location",
+          key: "fromBranch",
           type: "select",
-          placeholder: "Select transfer type",
+          placeholder: "Select from location",
           col: 6,                           // grid: 2 dropdowns side-by-side
-          options: [
-            { value: "branch_to_branch",     label: "Branch to Branch" },
-            { value: "warehouse_to_branch",  label: "Warehouse to Branch" },
-            { value: "branch_to_warehouse",  label: "Branch to Warehouse" },
-          ],
+          options: [],
         },
         {
-          label: "Status",
-          key: "status",
+          label: "To Location",
+          key: "toBranch",
           type: "select",
-          placeholder: "Select status",
+          placeholder: "Select to location",
           col: 6,                           // grid: sits next to Transfer Type
-          options: ["Pending", "In Transit", "Completed", "Cancelled"],
+          options: [],
         },
         {
           label: "Remarks",
@@ -136,56 +169,73 @@ export default {
         },
       ],
       headers: [
-        { text: "#", value: "index", sortable: false },
-        { text: "Ref", value: "ref", sortable: true },
-        { text: "Location", value: "location", sortable: true },
+        { text: "#", value: "id", sortable: false },
+        { text: "Reference No", value: "stfNo", sortable: true },
+        { text: "Location", value: "fromBranch", sortable: true },
         { text: "Remarks", value: "remarks", sortable: true },
         { text: "Status", value: "status", sortable: true },
-        { text: "User", value: "user", sortable: true },
+        { text: "User", value: "fullName", sortable: true },
         { text: "Actions", value: "actions", sortable: false },
-      ],
-      items: [
-        {
-          index: 1,
-          ref: "ITM-001",
-          location: "Laptop Pro X",
-          remarks: "Electronics",
-          status: "LOC-001",
-          user: "John Doe",
-        },
-        {
-          index: 2,
-          ref: "ITM-002",
-          location: "Wireless Mouse M3",
-          remarks: "Accessories",
-          status: "LOC-002",
-          user: "Jane Doe",
-        },
-        {
-          index: 3,
-          ref: "ITM-003",
-          location: "Desk Chair Ergonomic",
-          remarks: "Furniture",
-          status: "LOC-003",
-          user: "John Doe",
-        },
       ],
     };
   },
+  created() {
+    this.fetchTransfers();
+  },
   methods: {
+    async fetchTransfers() {
+      this.loading = true;
+      try {
+        const responseData = await api.get("/warehouse/stf/list");
+        const allTransfers = Array.isArray(responseData.data) ? responseData.data
+          : Array.isArray(responseData) ? responseData : [];
+        this.items = allTransfers.filter(
+          t => t.status && t.status.toLowerCase() === 'pending'
+        );
+        console.log("Pending transfers fetched:", this.items);
+      } catch (error) {
+        console.error("Failed to fetch pending transfers:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
     printItem(item) {
       this.selectedItem = { ...item };
     },
     editItem(item) {
       this.selectedItem = { ...item };
     },
-    async handleAddTransfer(newData) {
+    async handleEditTransfer(updatedData) {
+      console.log("Edit Transfer Data:", updatedData);
+      this.loading = true;
       try {
-        await api.post("/stock-transfer/transfer", newData);
-        // TODO: refetch list from backend once the endpoint is ready
-        console.log("Transfer created:", newData);
+        await api.post("/warehouse/stf/update", updatedData);
+        await this.fetchTransfers();
+      } catch (error) {
+        console.error("Failed to update transfer:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    cancelItem(item) {
+      this.selectedItem = { ...item };
+    },
+    handleCancelConfirm(item) {
+      // Hook your cancel API call here (the modal passes back the selected item).
+      // Example:
+      // await api.post("/warehouse/stf/cancel", { id: item.id });
+      console.log("Cancel confirmed for:", item);
+    },
+    async handleAddTransfer(newData) {
+      console.log("Add Transfer Data:", newData);
+      this.loading = true;
+      try {
+        await api.post("/warehouse/stf/add", newData);
+        await this.fetchTransfers();
       } catch (error) {
         console.error("Failed to create transfer:", error);
+      } finally {
+        this.loading = false;
       }
     },
   },

@@ -1,0 +1,13 @@
+{
+  "name": "my-central-app-warehouse",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "start": "npm --prefix frontend run start",
+    "serve": "npm --prefix frontend run serve",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint",
+    "install:frontend": "npm --prefix frontend install"
+  }
+}
+
