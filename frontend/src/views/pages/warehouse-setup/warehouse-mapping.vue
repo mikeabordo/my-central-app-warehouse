@@ -138,21 +138,6 @@ export default {
 </script>
 
 <style scoped>
-.badge-success {
-  background-color: #22cc62;
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.badge-danger {
-  background-color: #fc3d39;
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-}
 
 .actions .btn {
   font-size: 13px;
@@ -167,23 +152,4 @@ export default {
   transform: translateY(-1px);
 }
 
-.bg-success-dark {
-  background-color: rgba(34, 204, 98, 0.1);
-  color: #22cc62;
-}
-
-.bg-danger-light {
-  background-color: rgba(252, 61, 57, 0.1);
-  color: #fc3d39;
-}
-
-:deep(.action-edit) {
-  width: 16px;
-  height: 14px;
-}
-
-:deep(.action-delete) {
-  width: 16px;
-  height: 14px;
-}
 </style>

@@ -37,32 +37,32 @@
                     <div class="actions">
                       <button
                         type="button"
-                        class="btn btn-sm btn-info"
+                        class="btn btn-sm bg-info-light me-1"
                         data-bs-toggle="modal"
                         data-bs-target="#print-item"
                         @click="printItem(item)"
                       >
-                        Print
+                        <vue-feather type="printer" class="action-print"></vue-feather>
                       </button>
                       <button
                         v-if="item.isOwner"
                         type="button"
-                        class="btn btn-sm btn-warning ms-1"
+                        class="btn btn-sm bg-success-dark me-1"
                         data-bs-toggle="modal"
                         data-bs-target="#edit-transfer"
                         @click="editItem(item)"
                       >
-                        Edit
+                        <vue-feather type="edit" class="action-edit"></vue-feather>
                       </button>
                       <button
                         v-if="item.isOwner"
                         type="button"
-                        class="btn btn-sm btn-danger ms-1"
+                        class="btn btn-sm bg-danger-light me-1"
                         data-bs-toggle="modal"
                         data-bs-target="#cancel-transfer"
                         @click="cancelItem(item)"
                       >
-                        Cancel
+                        <vue-feather type="trash-2" class="action-delete"></vue-feather>
                       </button>
                     </div>
                   </template>
@@ -104,12 +104,21 @@
     :fields="addTransferFields"
     @update="handleEditTransfer"
   />
+
+  <!-- Print Transfer Modal -->
+  <print-modal
+    modal-id="print-item"
+    :item="selectedItem"
+    title="Stock Transfer Slip"
+    :fields="printFields"
+  />
 </template>
 
 <script>
 import AddModal from "@/components/modal/add-modal.vue";
 import CancelModal from "@/components/action-modal/cancel-modal.vue";
 import EditModal from "@/components/action-modal/edit-modal.vue";
+import PrintModal from "@/components/action-modal/print-modal.vue";
 import api from "@/services/api";
 
 export default {
@@ -118,6 +127,7 @@ export default {
     AddModal,
     CancelModal,
     EditModal,
+    PrintModal,
   },
   data() {
     return {
@@ -176,6 +186,13 @@ export default {
         { text: "Status", value: "status", sortable: true },
         { text: "User", value: "fullName", sortable: true },
         { text: "Actions", value: "actions", sortable: false },
+      ],
+      printFields: [
+        { label: "Reference No", key: "stfNo" },
+        { label: "Location", key: "fromBranch" },
+        { label: "Remarks", key: "remarks" },
+        { label: "Status", key: "status", uppercase: true },
+        { label: "Requested By", key: "fullName" },
       ],
     };
   },
@@ -244,4 +261,18 @@ export default {
 
 <style scoped>
 
+.actions .btn {
+  font-size: 13px;
+  padding: 3px 6px;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.actions .btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
 </style>
+

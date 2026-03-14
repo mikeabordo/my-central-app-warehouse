@@ -211,24 +211,4 @@ export default {
   opacity: 0.8;
   transform: translateY(-1px);
 }
-
-.bg-success-dark {
-  background-color: rgba(34, 204, 98, 0.1);
-  color: #22cc62;
-}
-
-.bg-danger-light {
-  background-color: rgba(252, 61, 57, 0.1);
-  color: #fc3d39;
-}
-
-:deep(.action-edit) {
-  width: 16px;
-  height: 14px;
-}
-
-:deep(.action-delete) {
-  width: 16px;
-  height: 14px;
-}
 </style>

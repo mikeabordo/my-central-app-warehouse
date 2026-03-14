@@ -39069,6 +39069,26 @@ label span {
   display: table-cell !important;
 }
 
+/* Action button - Print (blue) */
+.vue3-easy-data-table .actions .bg-info-light {
+  background-color: white !important;
+  border: 1px solid transparent !important;
+  color: #00c4ff !important;
+}
+
+.vue3-easy-data-table .actions .bg-info-light:hover {
+  color: #0093c0 !important;
+}
+
+.vue3-easy-data-table .actions .bg-info-light:hover .action-print {
+  color: #0dcaf0 !important;
+}
+
+.vue3-easy-data-table .actions .bg-info-light:active {
+  background-color: #c4c4c4 !important;
+  color: #fff !important;
+}
+
 /* Action button - Edit (green) */
 .vue3-easy-data-table .actions .bg-success-dark {
   background-color: white !important;
