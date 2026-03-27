@@ -1,19 +1,33 @@
-vue3-easy-data-table.es.js:906 Uncaught (in promise) TypeError: itemsSearching.value is not iterable
-    at eval (vue3-easy-data-table.es.js:906:44)
-    at ReactiveEffect.eval [as fn] (reactivity.esm-bundler.js:1038:13)
-    at ReactiveEffect.run (reactivity.esm-bundler.js:221:19)
-    at get value (reactivity.esm-bundler.js:1050:147)
-    at triggerComputed (reactivity.esm-bundler.js:240:19)
-    at get dirty (reactivity.esm-bundler.js:193:11)
-    at job (runtime-core.esm-bundler.js:2078:35)
-    at flushPreFlushCbs (runtime-core.esm-bundler.js:489:7)
-    at updateComponentPreRender (runtime-core.esm-bundler.js:6260:5)
-    at ReactiveEffect.componentUpdateFn [as fn] (runtime-core.esm-bundler.js:6173:11)
-Promise.then		
-eval	@	main.js:36
-./src/main.js	@	app.js:1306
-__webpack_require__	@	app.js:5028
-(anonymous)	@	app.js:6257
-__webpack_require__.O	@	app.js:5077
-(anonymous)	@	app.js:6258
-(anonymous)	@	app.js:6260
+runtime-core.esm-bundler.js:190 [Vue warn]: Unhandled error during execution of render function
+at <DataTable headers= Array(5) items= Array(3) search-value="" ... >
+at <DynamicDataTable headers= Array(5) items= Array(3) searchPlaceholder="Search items..." >
+at <ItemPricing onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > >
+at <RouterView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > >
+at <RouterView>
+at <App>
+warn$1 @ runtime-core.esm-bundler.js:190
+runtime-core.esm-bundler.js:190 [Vue warn]: Unhandled error during execution of scheduler flush. This is likely a Vue internals bug. Please open an issue at https://github.com/vuejs/core .
+at <DataTable headers= Array(5) items= Array(3) search-value="" ... >
+at <DynamicDataTable headers= Array(5) items= Array(3) searchPlaceholder="Search items..." >
+at <ItemPricing onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > >
+at <RouterView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > >
+at <RouterView>
+at <App>
+warn$1 @ runtime-core.esm-bundler.js:190
+runtime-core.esm-bundler.js:190 [Vue warn]: Unhandled error during execution of watcher callback
+at <DataTable headers= Array(5) items= Array(3) search-value="" ... >
+at <DynamicDataTable headers= Array(5) items= Array(3) searchPlaceholder="Search items..." >
+at <ItemPricing onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > >
+at <RouterView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > >
+at <RouterView>
+at <App>
+warn$1 @ runtime-core.esm-bundler.js:190
+runtime-dom.esm-bundler.js:605 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'shapeFlag')
+at setVarsOnVNode (runtime-dom.esm-bundler.js:605:13)
+at setVars (runtime-dom.esm-bundler.js:594:5)
+at callWithErrorHandling (runtime-core.esm-bundler.js:338:19)
+at callWithAsyncErrorHandling (runtime-core.esm-bundler.js:345:17)
+at ReactiveEffect.getter [as fn] (runtime-core.esm-bundler.js:2034:16)
+at ReactiveEffect.run (reactivity.esm-bundler.js:221:19)
+at flushPostFlushCbs (runtime-core.esm-bundler.js:511:41)
+at flushJobs (runtime-core.esm-bundler.js:549:5)

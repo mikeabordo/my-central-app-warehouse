@@ -11,15 +11,10 @@
               <h6>Manage Pending Transfer</h6>
             </div>
             <div class="page-btn">
-            <button
-              type="button"
-              class="btn btn-added"
-              data-bs-toggle="modal"
-              data-bs-target="#add-transfer"
-            >
-              <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Transfer
-            </button>
-          </div>
+              <router-link to="/stock-transfer/add-new-transfer" class="btn btn-added">
+                <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Transfer
+              </router-link>
+            </div>
         </div>
         <!-- End Page Header -->
         <div class="row">
@@ -33,36 +28,20 @@
                   searchPlaceholder="Search items..."
                 >
                   <!-- We can add specific scoped slots for items here if needed -->
-                  <template #item-actions=" item ">
-                    <div class="actions">
-                      <button
-                        type="button"
-                        class="btn btn-sm bg-info-light me-1"
-                        data-bs-toggle="modal"
-                        data-bs-target="#print-item"
-                        @click="printItem(item)"
-                      >
-                        <vue-feather type="printer" class="action-print"></vue-feather>
+                  <template #item-actions="item">
+                    <div class="table-actions d-flex gap-2">
+                      <button type="button" class="btn btn-sm btn-icon-only btn-outline-info" title="Print"
+                        data-bs-toggle="modal" data-bs-target="#print-item" @click="printItem(item)">
+                        <vue-feather type="printer" size="14"></vue-feather>
                       </button>
-                      <button
-                        v-if="item.isOwner"
-                        type="button"
-                        class="btn btn-sm bg-success-dark me-1"
-                        data-bs-toggle="modal"
-                        data-bs-target="#edit-transfer"
-                        @click="editItem(item)"
-                      >
-                        <vue-feather type="edit" class="action-edit"></vue-feather>
+                      <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-success"
+                        title="Edit" data-bs-toggle="modal" data-bs-target="#edit-transfer" @click="editItem(item)">
+                        <vue-feather type="edit" size="14"></vue-feather>
                       </button>
-                      <button
-                        v-if="item.isOwner"
-                        type="button"
-                        class="btn btn-sm bg-danger-light me-1"
-                        data-bs-toggle="modal"
-                        data-bs-target="#cancel-transfer"
-                        @click="cancelItem(item)"
-                      >
-                        <vue-feather type="trash-2" class="action-delete"></vue-feather>
+                      <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-danger"
+                        title="Cancel" data-bs-toggle="modal" data-bs-target="#cancel-transfer"
+                        @click="cancelItem(item)">
+                        <vue-feather type="x-circle" size="14"></vue-feather>
                       </button>
                     </div>
                   </template>
@@ -75,15 +54,7 @@
     </div>
   </div>
 
-  <!-- Add New Transfer Modal -->
-  <add-modal
-    modal-id="add-transfer"
-    title="Add New Transfer"
-    submit-label="Submit"
-    size="lg"
-    :fields="addTransferFields"
-    @create="handleAddTransfer"
-  />
+
 
   <cancel-modal
     modal-id="cancel-transfer"
@@ -101,7 +72,7 @@
     modal-id="edit-transfer"
     title="Edit Transfer"
     :item="selectedItem || {}"
-    :fields="addTransferFields"
+    :fields="editTransferFields"
     @update="handleEditTransfer"
   />
 
@@ -115,7 +86,7 @@
 </template>
 
 <script>
-import AddModal from "@/components/modal/add-modal.vue";
+
 import CancelModal from "@/components/action-modal/cancel-modal.vue";
 import EditModal from "@/components/action-modal/edit-modal.vue";
 import PrintModal from "@/components/action-modal/print-modal.vue";
@@ -124,7 +95,6 @@ import api from "@/services/api";
 export default {
   name: "PendingTransfer",
   components: {
-    AddModal,
     CancelModal,
     EditModal,
     PrintModal,
@@ -134,7 +104,7 @@ export default {
       items: [],
       selectedItem: null,
       loading: false,
-      addTransferFields: [
+      editTransferFields: [
         {
           label: "Item",
           key: "item_id",
@@ -145,21 +115,21 @@ export default {
           placeholder: "Search item…",
           minChars: 1,
           debounce: 350,
-          col: 12,                          // column: full-width, prominent
+          col: 12,
         },
         {
           label: "Reference No",
           key: "ref",
           type: "text",
           placeholder: "Enter reference number",
-          col: 12,                          // column: full-width row
+          col: 12,
         },
         {
           label: "From Location",
           key: "fromBranch",
           type: "select",
           placeholder: "Select from location",
-          col: 6,                           // grid: 2 dropdowns side-by-side
+          col: 6,
           options: [],
         },
         {
@@ -167,7 +137,7 @@ export default {
           key: "toBranch",
           type: "select",
           placeholder: "Select to location",
-          col: 6,                           // grid: sits next to Transfer Type
+          col: 6,
           options: [],
         },
         {
@@ -175,9 +145,10 @@ export default {
           key: "remarks",
           type: "text",
           placeholder: "Enter remarks",
-          col: 12,                          // column: full-width row
+          col: 12,
         },
       ],
+
       headers: [
         { text: "#", value: "id", sortable: false },
         { text: "Reference No", value: "stfNo", sortable: true },
@@ -238,41 +209,11 @@ export default {
       this.selectedItem = { ...item };
     },
     handleCancelConfirm(item) {
-      // Hook your cancel API call here (the modal passes back the selected item).
-      // Example:
-      // await api.post("/warehouse/stf/cancel", { id: item.id });
       console.log("Cancel confirmed for:", item);
     },
-    async handleAddTransfer(newData) {
-      console.log("Add Transfer Data:", newData);
-      this.loading = true;
-      try {
-        await api.post("/warehouse/stf/add", newData);
-        await this.fetchTransfers();
-      } catch (error) {
-        console.error("Failed to create transfer:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
+
   },
 };
 </script>
 
-<style scoped>
-
-.actions .btn {
-  font-size: 13px;
-  padding: 3px 6px;
-  border: none;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.actions .btn:hover {
-  opacity: 0.8;
-  transform: translateY(-1px);
-}
-
-</style>
 

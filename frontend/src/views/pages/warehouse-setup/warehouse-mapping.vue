@@ -18,41 +18,30 @@
           <div class="col-sm-12">
             <div class="card">
               <div class="card-body">
-                <dynamic-data-table
-                  :headers="headers"
-                  :items="warehouses"
-                  searchPlaceholder="Search warehouse mapping..."
-                >
+                <dynamic-data-table :headers="headers" :items="warehouses"
+                  searchPlaceholder="Search warehouse mapping...">
                   <!-- Status column with badge -->
                   <template #item-status="{ status }">
-                    <span
-                      :class="[
-                        'badge',
-                        status === 'Active'
-                          ? 'badge-success'
-                          : 'badge-danger',
-                      ]"
-                    >
+                    <span :class="[
+                      'badge',
+                      status === 'Active'
+                        ? 'badge-success'
+                        : 'badge-danger',
+                    ]">
                       {{ status }}
                     </span>
                   </template>
 
                   <!-- Actions column -->
-                  <template #item-actions="{ item }">
-                    <div class="actions">
-                      <button
-                        type="button"
-                        class="btn btn-sm bg-success-dark me-1"
-                        @click="editWarehouse(item)"
-                      >
-                        <vue-feather type="edit" class="action-edit"></vue-feather>
+                  <template #item-actions="item">
+                    <div class="table-actions d-flex gap-2">
+                      <button type="button" class="btn btn-sm btn-icon-only btn-outline-success" title="Edit"
+                        @click="editWarehouse(item)">
+                        <vue-feather type="edit" size="14"></vue-feather>
                       </button>
-                      <button
-                        type="button"
-                        class="btn btn-sm bg-danger-light"
-                        @click="deleteWarehouse(item.id)"
-                      >
-                        <vue-feather type="trash-2" class="action-delete"></vue-feather>
+                      <button type="button" class="btn btn-sm btn-icon-only btn-outline-danger" title="Delete"
+                        @click="deleteWarehouse(item.id)">
+                        <vue-feather type="trash-2" size="14"></vue-feather>
                       </button>
                     </div>
                   </template>
@@ -77,7 +66,7 @@ export default {
   data() {
     return {
       headers: [
-        { text: "ID", value: "id", sortable: true},
+        { text: "ID", value: "id", sortable: true },
         { text: "Warehouse Name", value: "name", sortable: true },
         { text: "Location Code", value: "location_code", sortable: true },
         { text: "Zone", value: "zone", sortable: true },
@@ -121,7 +110,7 @@ export default {
     };
   },
   mounted() {
-    
+
   },
   methods: {
     editWarehouse(warehouse) {
@@ -138,7 +127,6 @@ export default {
 </script>
 
 <style scoped>
-
 .actions .btn {
   font-size: 13px;
   padding: 3px 6px;
@@ -151,5 +139,4 @@ export default {
   opacity: 0.8;
   transform: translateY(-1px);
 }
-
 </style>

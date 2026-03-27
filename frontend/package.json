@@ -30,6 +30,7 @@
     "ionicons-npm": "^2.0.1",
     "material-icons": "^1.13.9",
     "mdb-vue-ui-kit": "^4.1.1",
+    "my-central-app-warehouse": "file:..",
     "pe7-icon": "^1.0.4",
     "rater-js": "^1.0.1",
     "sweetalert2": "^11.10.6",

@@ -16,38 +16,24 @@
           <div class="col-sm-12">
             <div class="card">
               <div class="card-body">
-                <dynamic-data-table
-                  :headers="headers"
-                  :items="items"
-                  searchPlaceholder="Search items..."
-                >
+                <dynamic-data-table :headers="headers" :items="items" searchPlaceholder="Search items...">
                   <!-- We can add specific scoped slots for items here if needed -->
-                  <template #item-actions="{ item }">
-                    <div class="actions">
-                      <button 
-                      type="button"
-                      class="btn btn-sm btn-primary"
-                      data-bs-toggle="modal"
-                      data-bs-target="#view-item"
-                      @click="viewItem(item)"
-                      >
-                      View
-                    </button>
+                  <template #item-actions="item">
+                    <div class="table-actions d-flex gap-2">
+                      <router-link :to="`/stock-monitoring/item-pricing/view/${item.id}`"
+                        class="btn btn-sm btn-icon-only btn-outline-dark" title="View Details">
+                        <vue-feather type="eye" size="14"></vue-feather>
+                      </router-link>
                     </div>
                   </template>
                 </dynamic-data-table>
-              </div>  
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <view-item-modal
-      modal-id="view-item"
-      title="View Item"
-      :item="selectedItem"
-      :fields="viewItemFields"
-    />
+    <view-item-modal modal-id="view-item" title="View Item" :item="selectedItem" :fields="viewItemFields" />
   </div>
 </template>
 
@@ -63,9 +49,9 @@ export default {
     return {
       selectedItem: {},
       viewItemFields: [
-        { label: "SKU",           key: "sku" },
-        { label: "Product",       key: "product" },
-        { label: "Edition",       key: "edition" },
+        { label: "SKU", key: "sku" },
+        { label: "Product", key: "product" },
+        { label: "Edition", key: "edition" },
         { label: "Location Code", key: "location_code" },
         { label: "Other Location", key: "other_location" },
       ],
@@ -114,6 +100,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

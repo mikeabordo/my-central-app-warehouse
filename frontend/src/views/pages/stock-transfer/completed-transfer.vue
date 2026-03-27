@@ -5,67 +5,41 @@
     <div class="page-wrapper">
       <div class="content">
         <div class="page-header justify-content-between">
-            <div class="page-title">
-              <h4>Completed Transfer</h4>
-              <h6>Manage Completed Transfer</h6>
-            </div>
-            <div class="page-btn">
-              <button
-                type="button"
-                class="btn btn-added"
-                data-bs-toggle="modal"
-                data-bs-target="#add-transfer"
-              >
-                <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Transfer
-              </button>
+          <div class="page-title">
+            <h4>Completed Transfer</h4>
+            <h6>Manage Completed Transfer</h6>
+          </div>
+          <div class="page-btn">
+            <button type="button" class="btn btn-added" data-bs-toggle="modal" data-bs-target="#add-transfer">
+              <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Transfer
+            </button>
           </div>
         </div>
         <div class="row">
           <div class="col-sm-12">
             <div class="card">
               <div class="card-body">
-                <dynamic-data-table
-                  :headers="headers"
-                  :items="items"
-                  :loading="loading"
-                  searchPlaceholder="Search items..."
-                >
+                <dynamic-data-table :headers="headers" :items="items" :loading="loading"
+                  searchPlaceholder="Search items...">
                   <!-- We can add specific scoped slots for items here if needed -->
-                  <template #item-actions=" item ">
-                    <div class="actions">
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-info"
-                        data-bs-toggle="modal"
-                        data-bs-target="#print-item"
-                        @click="printItem(item)"
-                      >
-                        Print
+                  <template #item-actions="item">
+                    <div class="table-actions d-flex gap-2">
+                      <button type="button" class="btn btn-sm btn-icon-only btn-outline-info" title="Print"
+                        data-bs-toggle="modal" data-bs-target="#print-item" @click="printItem(item)">
+                        <vue-feather type="printer" size="14"></vue-feather>
                       </button>
-                      <button
-                        v-if="item.isOwner"
-                        type="button"
-                        class="btn btn-sm btn-warning ms-1"
-                        data-bs-toggle="modal"
-                        data-bs-target="#edit-transfer"
-                        @click="editItem(item)"
-                      >
-                        Edit
+                      <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-success"
+                        title="Edit" data-bs-toggle="modal" data-bs-target="#edit-transfer" @click="editItem(item)">
+                        <vue-feather type="edit" size="14"></vue-feather>
                       </button>
-                      <button
-                        v-if="item.isOwner"
-                        type="button"
-                        class="btn btn-sm btn-danger ms-1"
-                        data-bs-toggle="modal"
-                        data-bs-target="#cancel-item"
-                        @click="cancelItem(item)"
-                      >
-                        Cancel
+                      <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-danger"
+                        title="Cancel" data-bs-toggle="modal" data-bs-target="#cancel-item" @click="cancelItem(item)">
+                        <vue-feather type="x-circle" size="14"></vue-feather>
                       </button>
                     </div>
                   </template>
                 </dynamic-data-table>
-              </div>  
+              </div>
             </div>
           </div>
         </div>
@@ -73,24 +47,11 @@
     </div>
   </div>
   <!-- Add New Transfer Modal -->
-  <add-modal
-    modal-id="add-transfer"
-    title="Add New Transfer"
-    submit-label="Submit"
-    size="lg"
-    :fields="addTransferFields"
-    @create="handleAddTransfer"
-  />
+  <add-modal modal-id="add-transfer" title="Add New Transfer" submit-label="Submit" size="lg"
+    :fields="addTransferFields" @create="handleAddTransfer" />
   <!-- Edit Transfer Modal -->
-  <edit-modal
-    modal-id="edit-transfer"
-    title="Edit Transfer"
-    submit-label="Save Changes"
-    size="lg"
-    :fields="addTransferFields"
-    :initial-data="selectedItem"
-    @update="handleEditTransfer"
-  />
+  <edit-modal modal-id="edit-transfer" title="Edit Transfer" submit-label="Save Changes" size="lg"
+    :fields="addTransferFields" :initial-data="selectedItem" @update="handleEditTransfer" />
 </template>
 
 <script>
@@ -120,21 +81,21 @@ export default {
           placeholder: "Search item…",
           minChars: 1,
           debounce: 350,
-          col: 12,                          // column: full-width, prominent
+          col: 12,
         },
         {
           label: "Reference No",
           key: "ref",
           type: "text",
           placeholder: "Enter reference number",
-          col: 12,                          // column: full-width row
+          col: 12,
         },
         {
           label: "From Location",
           key: "fromBranch",
           type: "select",
           placeholder: "Select from location",
-          col: 6,                           // grid: 2 dropdowns side-by-side
+          col: 6,
           options: [],
         },
         {
@@ -142,7 +103,7 @@ export default {
           key: "toBranch",
           type: "select",
           placeholder: "Select to location",
-          col: 6,                           // grid: sits next to Transfer Type
+          col: 6,
           options: [],
         },
         {
@@ -150,7 +111,7 @@ export default {
           key: "remarks",
           type: "text",
           placeholder: "Enter remarks",
-          col: 12,                          // column: full-width row
+          col: 12,
         },
       ],
       headers: [
@@ -209,7 +170,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-
-</style>

@@ -3,33 +3,18 @@
     <!-- Search Input (optional) -->
     <div v-if="showSearch" class="datatable-search mb-3 position-relative" style="max-width: 300px;">
       <vue-feather type="search" class="search-icon"></vue-feather>
-      <input
-        v-model="internalSearchValue"
-        type="text"
-        class="form-control"
-        :placeholder="searchPlaceholder"
-        style="padding-left: 36px;"
-      />
+      <input v-model="internalSearchValue" type="text" class="form-control" :placeholder="searchPlaceholder"
+        style="padding-left: 36px;" />
     </div>
 
-    <EasyDataTable
-      :headers="headers"
-      :items="items"
-      :search-value="internalSearchValue"
-      :rows-per-page="rowsPerPage"
-      :theme-color="themeColor"
-      :loading="loading"
-      table-class-name="customize-table"
-      header-text-direction="left"
-      body-text-direction="left"
-      alternating
-      buttons-pagination
-    >
-    <template #loading>
-      <div class="table-loader">
-        <div class="whirly-loader"></div>
-      </div>
-    </template>
+    <EasyDataTable :headers="headers" :items="items" :search-value="internalSearchValue" :rows-per-page="rowsPerPage"
+      :theme-color="themeColor" :loading="loading" table-class-name="customize-table" header-text-direction="left"
+      body-text-direction="left" alternating buttons-pagination>
+      <template #loading>
+        <div class="table-loader">
+          <div class="whirly-loader"></div>
+        </div>
+      </template>
 
       <!-- Dynamically pass through all scoped slots -->
       <template v-for="(_, slotName) in $slots" v-slot:[slotName]="slotProps">
@@ -71,7 +56,7 @@ export default {
     },
     themeColor: {
       type: String,
-      default: "#7638ff",
+      default: "#1d3582",
     },
   },
   data() {
@@ -134,7 +119,7 @@ export default {
   border-radius: 100%;
   position: relative;
   /* Centering the visual ring relative to the element */
-  transform: translateY(-26px); 
+  transform: translateY(-26px);
 }
 
 .pulse-logo {
@@ -150,12 +135,25 @@ export default {
 }
 
 @keyframes whirly-loader {
-  to { transform: translateY(-26px) rotate(1turn); }
+  to {
+    transform: translateY(-26px) rotate(1turn);
+  }
 }
 
 @keyframes pulse {
-  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.8; }
-  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.8; }
+  0% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.8;
+  }
 }
 </style>

@@ -5,6 +5,7 @@ import { RouterView } from 'vue-router'
 import PendingTransfer from '@/views/pages/stock-transfer/pending-transfer.vue'
 import CompletedTransfer from '@/views/pages/stock-transfer/completed-transfer.vue'
 import CancelledTransfer from '@/views/pages/stock-transfer/cancelled-transfer.vue'
+import AddNewTransfer from '@/components/form-path/add-new-transfer.vue'
 
 export default [
     {
@@ -14,6 +15,11 @@ export default [
             {
                 path: '',
                 redirect: 'pending-transfer'
+            },
+            {
+                path: 'add-new-transfer',
+                name: 'add-new-transfer',
+                component: AddNewTransfer
             },
             {
                 path: 'pending-transfer',
