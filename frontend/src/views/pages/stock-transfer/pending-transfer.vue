@@ -6,27 +6,23 @@
       <div class="content">
         <!-- Page Header -->
         <div class="page-header justify-content-between">
-            <div class="page-title">
-              <h4>Pending Transfer</h4>
-              <h6>Manage Pending Transfer</h6>
-            </div>
-            <div class="page-btn">
-              <router-link to="/stock-transfer/add-new-transfer" class="btn btn-added">
-                <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Transfer
-              </router-link>
-            </div>
+          <div class="page-title">
+            <h4>Pending Transfer</h4>
+            <h6>Manage Pending Transfer</h6>
+          </div>
+          <div class="page-btn">
+            <router-link to="/stock-transfer/add-new-transfer" class="btn btn-added btn-gradient warm">
+              <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Transfer
+            </router-link>
+          </div>
         </div>
         <!-- End Page Header -->
         <div class="row">
           <div class="col-sm-12">
             <div class="card">
               <div class="card-body">
-                <dynamic-data-table
-                  :headers="headers"
-                  :items="items"
-                  :loading="loading"
-                  searchPlaceholder="Search items..."
-                >
+                <dynamic-data-table :headers="headers" :items="items" :loading="loading"
+                  searchPlaceholder="Search items...">
                   <!-- We can add specific scoped slots for items here if needed -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
@@ -46,7 +42,7 @@
                     </div>
                   </template>
                 </dynamic-data-table>
-              </div>  
+              </div>
             </div>
           </div>
         </div>
@@ -56,33 +52,17 @@
 
 
 
-  <cancel-modal
-    modal-id="cancel-transfer"
-    title="Cancel Transfer"
+  <cancel-modal modal-id="cancel-transfer" title="Cancel Transfer"
     :message="`Are you sure you want to cancel this transfer?`"
-    :details="selectedItem ? `Reference: ${selectedItem.stfNo || ''}` : ''"
-    :item="selectedItem"
-    confirm-label="Yes, cancel"
-    cancel-label="No"
-    @confirm="handleCancelConfirm"
-  />
+    :details="selectedItem ? `Reference: ${selectedItem.stfNo || ''}` : ''" :item="selectedItem"
+    confirm-label="Yes, cancel" cancel-label="No" @confirm="handleCancelConfirm" />
 
   <!-- Edit Transfer Modal -->
-  <edit-modal
-    modal-id="edit-transfer"
-    title="Edit Transfer"
-    :item="selectedItem || {}"
-    :fields="editTransferFields"
-    @update="handleEditTransfer"
-  />
+  <edit-modal modal-id="edit-transfer" title="Edit Transfer" :item="selectedItem || {}" :fields="editTransferFields"
+    @update="handleEditTransfer" />
 
   <!-- Print Transfer Modal -->
-  <print-modal
-    modal-id="print-item"
-    :item="selectedItem"
-    title="Stock Transfer Slip"
-    :fields="printFields"
-  />
+  <print-modal modal-id="print-item" :item="selectedItem" title="Stock Transfer Slip" :fields="printFields" />
 </template>
 
 <script>
@@ -215,5 +195,3 @@ export default {
   },
 };
 </script>
-
-

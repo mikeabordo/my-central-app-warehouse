@@ -11,14 +11,9 @@
             <h6>Manage your Warehouses</h6>
           </div>
           <div class="page-btn">
-            <button
-              type="button"
-              class="btn btn-added"
-              data-bs-toggle="modal"
-              data-bs-target="#add-warehouse"
-            >
+            <router-link to="/warehouse-setup/add-new-warehouse" class="btn btn-added btn-gradient warm">
               <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Warehouse
-            </button>
+            </router-link>
           </div>
         </div>
         <!-- end page header -->
@@ -28,35 +23,24 @@
           <div class="col-sm-12">
             <div class="card">
               <div class="card-body">
-                <dynamic-data-table
-                  :headers="headers"
-                  :items="warehouses"
-                  :loading="loading"
-                  searchPlaceholder="Search warehouses..."
-                >
+                <dynamic-data-table :headers="headers" :items="warehouses" :loading="loading"
+                  searchPlaceholder="Search warehouses...">
                   <!-- Status column with badge -->
                   <template #item-status="{ status }">
-                    <span
-                      :class="[
-                        'badge',
-                        status === 'Active'
-                          ? 'badge-success'
-                          : 'badge-danger',
-                      ]"
-                    >
+                    <span :class="[
+                      'badge',
+                      status === 'Active'
+                        ? 'badge-success'
+                        : 'badge-danger',
+                    ]">
                       {{ status }}
                     </span>
                   </template>
 
                   <template #item-actions="item">
                     <div class="actions">
-                      <button
-                        type="button"
-                        class="btn btn-sm bg-success-dark me-1"
-                        data-bs-toggle="modal"
-                        data-bs-target="#edit-modal"
-                        @click="editWarehouse(item)"
-                      >
+                      <button type="button" class="btn btn-sm bg-success-dark me-1" data-bs-toggle="modal"
+                        data-bs-target="#edit-modal" @click="editWarehouse(item)">
                         <vue-feather type="edit" class="action-edit"></vue-feather>
                       </button>
                     </div>
@@ -69,24 +53,13 @@
       </div>
     </div>
   </div>
-  <add-modal
-    modal-id="add-warehouse"
-    title="Create Warehouse"
-    submit-label="Submit"
-    :fields="addWarehouseFields"
-    @create="handleAddWarehouse"
-  />
-  <edit-modal
-    modal-id="edit-modal"
-    title="Edit Warehouse"
-    :item="selectedWarehouse"
-    :fields="editWarehouseFields"
-    @update="handleUpdateWarehouse"
-  />
+
+  <edit-modal modal-id="edit-modal" title="Edit Warehouse" :item="selectedWarehouse" :fields="editWarehouseFields"
+    @update="handleUpdateWarehouse" />
 </template>
 
 <script>
-import AddModal from "@/components/modal/add-modal.vue";
+
 import EditModal from "@/components/action-modal/edit-modal.vue";
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
 import api from "@/services/api";
@@ -94,25 +67,20 @@ import api from "@/services/api";
 export default {
   name: "WarehouseList",
   components: {
-    AddModal,
     EditModal,
     DynamicDataTable,
   },
   data() {
     return {
-      addWarehouseFields: [
-        { label: "Branch Name",    key: "branchstorename", placeholder: "Enter branch name" },
-        { label: "Branch Address", key: "branchaddress",   placeholder: "Enter branch address" },
-        { label: "Branch Contact", key: "branchcontact",   placeholder: "Enter branch contact" },
-      ],
+
       editWarehouseFields: [
-        { label: "Warehouse Code", key: "whcode",          disabled: true },
-        { label: "Branch Name",    key: "branchstorename" },
-        { label: "Branch Address", key: "branchaddress"   },
-        { label: "Branch Contact", key: "branchcontact"   },
+        { label: "Warehouse Code", key: "whcode", disabled: true },
+        { label: "Branch Name", key: "branchstorename" },
+        { label: "Branch Address", key: "branchaddress" },
+        { label: "Branch Contact", key: "branchcontact" },
       ],
       headers: [
-        { text: "ID", value: "id", sortable: true},
+        { text: "ID", value: "id", sortable: true },
         { text: "Warehouse Code", value: "whcode", sortable: true },
         { text: "Branch Name", value: "branchstorename", sortable: true },
         { text: "Branch Address", value: "branchaddress", sortable: true },
@@ -141,24 +109,7 @@ export default {
         this.loading = false;
       }
     },
-    addWarehouse() {
-      this.selectedWarehouse = null;
-    },
-    async handleAddWarehouse(newData) {
-      this.loading = true;
-      try {
-        // Post new data
-        await api.post('/warehouse/warehouse', newData);
-        
-        // Refetch the entire list from the backend to ensure we have the new auto-generated ID 
-        // and that it is fully in sync with the server database.
-        await this.fetchWarehouses();
-      } catch (error) {
-        console.error("Failed to add warehouse:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
+
     editWarehouse(warehouse) {
       this.selectedWarehouse = { ...warehouse };
     },
@@ -167,7 +118,7 @@ export default {
       try {
         // TODO: Update the endpoint URL and method as per your backend
         await api.put(`/warehouse/warehouse/${updatedData.id}`, updatedData);
-        
+
         const index = this.warehouses.findIndex(w => w.id === updatedData.id);
         if (index !== -1) {
           this.warehouses.splice(index, 1, updatedData);

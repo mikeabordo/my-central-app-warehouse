@@ -4,11 +4,31 @@
         <layout-sidebar></layout-sidebar>
         <div class="page-wrapper">
             <div class="content">
+                <!-- minimal breadcrumb -->
+                <nav aria-label="breadcrumb" class="mb-4 d-none d-md-flex">
+                    <div class="minimal-breadcrumb">
+
+
+                        <router-link to="/stock-transfer/pending-transfer" class="mb-item">
+                            Stock Transfer
+                        </router-link>
+
+                        <div class="mb-separator">
+                            <vue-feather type="chevron-right" size="16"></vue-feather>
+                        </div>
+
+                        <div class="mb-item active">
+                            Add New Transfer
+                        </div>
+                    </div>
+                </nav>
                 <div class="page-header justify-content-between">
                     <div class="page-title">
                         <h4>Add New Transfer</h4>
                         <h6>Create a new stock transfer request</h6>
                     </div>
+
+                    <!-- back button -->
                     <div class="page-btn">
                         <router-link to="/stock-transfer/pending-transfer" class="btn btn-added btn-dark">
                             <vue-feather type="arrow-left" class="me-2"></vue-feather>Back to Pending Transfer
@@ -18,12 +38,8 @@
 
                 <div class="row">
                     <div class="col-sm-12">
-                        <add-form
-                            :submitLabel="'Submit Transfer'"
-                            :fields="fields"
-                            @create="submitTransfer"
-                            @cancel="$router.push('/stock-transfer/pending-transfer')"
-                        />
+                        <add-form submitLabel="Submit Transfer" :fields="fields" :loading="loading"
+                            @create="submitTransfer" @cancel="$router.push('/stock-transfer/pending-transfer')" />
                     </div>
                 </div>
             </div>
@@ -44,6 +60,7 @@ export default {
         return {
             nextSTFNo: "",
             branchOptions: [],
+            loading: false,
         };
     },
     computed: {
@@ -143,13 +160,56 @@ export default {
             }
         },
         async submitTransfer(formData) {
+            this.loading = true;
             try {
                 await api.post("/warehouse/stf/add", formData);
                 this.$router.push("/stock-transfer/pending-transfer");
             } catch (error) {
                 console.error("Transfer submission failed:", error);
+            } finally {
+                this.loading = false;
             }
         },
     },
 };
 </script>
+
+<style scoped>
+.minimal-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    padding: 0;
+}
+
+.mb-item {
+    display: flex;
+    align-items: center;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 100;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-bottom: 2px;
+    font-style: italic;
+}
+
+.mb-item:hover:not(.active) {
+    color: #FF9F43;
+}
+
+.mb-item.active {
+    color: #1e293b;
+    font-weight: 500;
+    border-bottom: 1px solid #FF9F43;
+}
+
+.mb-separator {
+    display: flex;
+    align-items: center;
+    margin: 0 12px;
+    color: #abb2ba;
+    font-weight: 500;
+}
+</style>

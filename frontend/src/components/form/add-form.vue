@@ -59,7 +59,7 @@
                                             <td v-for="col in (field.tableColumns || [{ label: 'Result', key: 'label' }])"
                                                 :key="col.key">
                                                 {{ col.key === 'label' ? getOptionLabel(result) : (result._raw &&
-                                                result._raw[col.key]) }}
+                                                    result._raw[col.key]) }}
                                             </td>
                                             <td>
                                                 <button type="button" class="btn btn-sm btn-outline-primary"
@@ -101,10 +101,11 @@
         </div>
 
         <div class="d-flex justify-content-end mb-5">
-            <button type="button" class="btn btn-cancel me-2" @click="handleCancel">
+            <button type="button" class="btn btn-dark me-2" @click="handleCancel" :disabled="loading">
                 Cancel
             </button>
-            <button type="submit" class="btn btn-submit">
+            <button type="submit" class="btn btn-submit" :disabled="loading">
+                <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
                 {{ submitLabel }}
             </button>
         </div>
@@ -120,6 +121,7 @@ export default {
         title: { type: String, default: "Add New" },
         submitLabel: { type: String, default: "Submit" },
         fields: { type: Array, default: () => [] },
+        loading: { type: Boolean, default: false },
     },
 
     emits: ["create", "cancel"],
