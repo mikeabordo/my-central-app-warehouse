@@ -33,7 +33,7 @@
                         data-bs-toggle="modal" data-bs-target="#print-item" @click="printItem(item)">
                         <vue-feather type="printer" size="14"></vue-feather>
                       </button>
-                      <router-link v-if="item.isOwner" :to="`/stock-transfer/edit/${item.id}`" class="btn btn-sm btn-icon-only btn-outline-success"
+                      <router-link v-if="item.isOwner" :to="`/stock-transfer/edit/${item.stfNo}`" class="btn btn-sm btn-icon-only btn-outline-success"
                         title="Edit">
                         <vue-feather type="edit" size="14"></vue-feather>
                       </router-link>

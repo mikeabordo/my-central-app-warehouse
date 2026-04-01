@@ -45,64 +45,68 @@
                         <label class="form-label">{{ field.label }}</label>
 
                         <!-- ── API Search field ── -->
-                        <div v-if="isSearch(field)" class="search-field-wrapper ">
-                            <input type="text" class="form-control mb-3" v-model="searchQueries[field.key]"
-                                :placeholder="field.placeholder || `Search ${field.label}…`"
-                                @input="onSearchInput(field, $event)" @keydown.escape="closeDropdown(field.key)"
-                                autocomplete="off" />
-                            <!-- Loading spinner inside input -->
-                            <div v-if="searchLoading[field.key]" class="search-spinner" style="top: 20px;">
-                                <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
+                        <div v-if="isSearch(field)" class="search-field-wrapper" v-click-outside="() => closeDropdown(field.key)">
+                            <div class="position-relative" style="z-index: 1051;">
+                                <input type="text" class="form-control mb-3" v-model="searchQueries[field.key]"
+                                    :placeholder="field.placeholder || `Search ${field.label}…`"
+                                    @input="onSearchInput(field, $event)" @keydown.escape="closeDropdown(field.key)"
+                                    autocomplete="off" />
+                                <!-- Loading spinner inside input -->
+                                <div v-if="searchLoading[field.key]" class="search-spinner" style="top: 20px;">
+                                    <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
+                                </div>
+                                
+                                <!-- Results Dropdown -->
+                                <div v-if="searchResults[field.key] && searchResults[field.key].length" 
+                                     class="search-results-dropdown shadow-lg border rounded">
+                                    <ul class="list-unstyled mb-0">
+                                        <li v-for="result in searchResults[field.key]" 
+                                            :key="getOptionValue(result)"
+                                            class="search-result-item p-2 border-bottom"
+                                            @click="selectSearchResult(field, result)">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="result-details">
+                                                    <slot :name="'col-product_details'" v-bind="result._raw">
+                                                        <span class="fw-bold">{{ getOptionLabel(result) }}</span>
+                                                    </slot>
+                                                </div>
+                                                <vue-feather type="plus-circle" size="16" class="text-primary"></vue-feather>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
-                            <!-- Results Table -->
-                            <div class="table-responsive border rounded">
-                                <table class="table mb-0">
-                                    <thead>
+                            <!-- No results state (inline) -->
+                            <div v-if="searchNoResult[field.key]" class="text-danger small mb-2">
+                                No results found
+                            </div>
+
+                            <!-- Selected Items Table -->
+                            <div v-if="selectedItems[field.key] && selectedItems[field.key].length" class="table-responsive border rounded mt-2">
+                                <table class="table table-hover mb-0">
+                                    <thead class="bg-light">
                                         <tr>
                                             <th v-for="col in (field.tableColumns || [{ label: 'Result', key: 'label' }])"
                                                 :key="col.key">
                                                 {{ col.label }}
                                             </th>
-                                            <th style="width: 100px;">Action</th>
+                                            <th style="width: 80px;" class="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- Initial state / Empty search -->
-                                        <tr
-                                            v-if="!searchQueries[field.key] || searchQueries[field.key].length < (field.minChars || 1)">
-                                            <td :colspan="(field.tableColumns ? field.tableColumns.length : 1) + 1"
-                                                class="text-center text-muted py-4">
-                                                Type to search...
+                                        <tr v-for="(item, idx) in selectedItems[field.key]" :key="idx">
+                                            <td v-for="col in (field.tableColumns || [])" :key="col.key">
+                                                <template v-if="col.editable || col.key === 'qty'">
+                                                    <input type="number" v-model.number="item[col.key]" class="form-control form-control-sm" style="width: 80px;" min="1" @input="updateFormData(field)">
+                                                </template>
+                                                <slot v-else :name="'col-' + col.key" v-bind="item._raw">
+                                                    {{ col.key === 'label' ? item.label : (item._raw && item._raw[col.key]) }}
+                                                </slot>
                                             </td>
-                                        </tr>
-                                        <!-- Loading state -->
-                                        <tr v-else-if="searchLoading[field.key]">
-                                            <td :colspan="(field.tableColumns ? field.tableColumns.length : 1) + 1"
-                                                class="text-center py-4">
-                                                <span class="spinner-border spinner-border-sm text-primary me-2"></span>
-                                                Searching...
-                                            </td>
-                                        </tr>
-                                        <!-- No results state -->
-                                        <tr v-else-if="searchNoResult[field.key]">
-                                            <td :colspan="(field.tableColumns ? field.tableColumns.length : 1) + 1"
-                                                class="text-center text-muted py-4">
-                                                No results found
-                                            </td>
-                                        </tr>
-                                        <!-- Results state -->
-                                        <tr v-else v-for="result in searchResults[field.key]"
-                                            :key="getOptionValue(result)">
-                                            <td v-for="col in (field.tableColumns || [{ label: 'Result', key: 'label' }])"
-                                                :key="col.key">
-                                                {{ col.key === 'label' ? getOptionLabel(result) : (result._raw &&
-                                                    result._raw[col.key]) }}
-                                            </td>
-                                            <td>
-                                                <button type="button" class="btn btn-sm btn-outline-primary"
-                                                    @click="selectSearchResult(field, result)">
-                                                    Select
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-danger border-0" @click="removeSelectedItem(field, idx)">
+                                                    <vue-feather type="trash-2" size="16"></vue-feather>
                                                 </button>
                                             </td>
                                         </tr>
@@ -139,7 +143,7 @@
         </div>
 
         <div class="d-flex justify-content-end mb-5">
-            <button type="submit" class="btn btn-submit" :disabled="loading">
+            <button type="submit" class="btn btn-submit btn-gradient warm" :disabled="loading">
                 <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
                 {{ submitLabel }}
             </button>
@@ -169,6 +173,7 @@ export default {
             searchResults: {},
             searchLoading: {},
             searchNoResult: {},
+            selectedItems: {}, // Track selected items for search fields
             openSummaryDropdowns: {},
             _debounceTimers: {},
         };
@@ -235,6 +240,7 @@ export default {
             const results = { ...this.searchResults };
             const loading = { ...this.searchLoading };
             const noResult = { ...this.searchNoResult };
+            const selected = { ...this.selectedItems };
 
             const all = [...fields, ...summaries];
 
@@ -252,6 +258,10 @@ export default {
                     loading[f.key] = false;
                     noResult[f.key] = false;
                 }
+
+                if (this.isSearch(f) && !selected[f.key]) {
+                    selected[f.key] = [];
+                }
             });
 
             this.formData = current;
@@ -259,13 +269,18 @@ export default {
             this.searchResults = results;
             this.searchLoading = loading;
             this.searchNoResult = noResult;
+            this.selectedItems = selected;
         },
 
         onSearchInput(field, event) {
             const query = event.target.value;
             this.searchQueries[field.key] = query;
 
-            this.formData[field.key] = "";
+            // Only clear formData for single-selects. For lists, keep the existing items.
+            if (!this.selectedItems[field.key] || this.selectedItems[field.key].length === 0) {
+                this.formData[field.key] = "";
+            }
+            
             this.searchResults[field.key] = [];
             this.searchNoResult[field.key] = false;
 
@@ -283,14 +298,31 @@ export default {
             this.searchLoading[field.key] = true;
             this.searchNoResult[field.key] = false;
 
+            console.log(`[Search - ${field.key}] Initiating search...`);
+            console.log(`[Search - ${field.key}] Endpoint:`, field.endpoint);
+            console.log(`[Search - ${field.key}] Query:`, query);
+
             try {
-                const response = await api.get(
-                    `${field.endpoint}?q=${encodeURIComponent(query)}&limit=10`
-                );
+                const method = (field.method || "get").toLowerCase();
+                console.log(`[Search - ${field.key}] Method being used:`, method);
+                let response;
+
+                if (method === "post") {
+                    console.log(`[Search - ${field.key}] Request Payload:`, { search: query, limit: 10 });
+                    response = await api.post(field.endpoint, { search: query, limit: 10 });
+                } else {
+                    const fullUrl = `${field.endpoint}?search=${encodeURIComponent(query)}&limit=10`;
+                    console.log(`[Search - ${field.key}] Request URL:`, fullUrl);
+                    response = await api.get(fullUrl);
+                }
+
+                console.log(`[Search - ${field.key}] Raw Response from Backend:`, response);
 
                 const raw = Array.isArray(response)
                     ? response
                     : response.data ?? [];
+
+                console.log(`[Search - ${field.key}] Extracted Array for Mapping:`, raw);
 
                 const valueKey = field.valueKey ?? "id";
                 const labelKey = field.labelKey ?? "name";
@@ -301,9 +333,11 @@ export default {
                     _raw: item,
                 }));
 
+                console.log(`[Search - ${field.key}] Final Mapped Search Results:`, this.searchResults[field.key]);
+
                 this.searchNoResult[field.key] = this.searchResults[field.key].length === 0;
             } catch (err) {
-                console.error(`[AddForm] search error for "${field.key}":`, err);
+                console.error(`[Search - ${field.key}] Search Error:`, err);
                 this.searchResults[field.key] = [];
                 this.searchNoResult[field.key] = true;
             } finally {
@@ -312,10 +346,43 @@ export default {
         },
 
         selectSearchResult(field, result) {
-            this.formData[field.key] = result.value;
-            this.searchQueries[field.key] = result.label;
+            // Add to selected items instead of just setting value
+            if (!this.selectedItems[field.key]) {
+                this.selectedItems[field.key] = [];
+            }
+
+            // prevent duplicates safely (even if value is undefined)
+            const isDup = this.selectedItems[field.key].some(item => {
+                if (item.value && result.value) return item.value === result.value;
+                if (item._raw && result._raw && item._raw.id) return item._raw.id === result._raw.id;
+                return JSON.stringify(item._raw) === JSON.stringify(result._raw);
+            });
+
+            if (!isDup) {
+                this.selectedItems[field.key] = [
+                    ...this.selectedItems[field.key], 
+                    { ...result, qty: 1 }
+                ];
+            }
+
+            this.updateFormData(field);
+
+            this.searchQueries[field.key] = ""; // Clear search query after selection
             this.searchResults[field.key] = [];
             this.searchNoResult[field.key] = false;
+        },
+
+        removeSelectedItem(field, index) {
+            this.selectedItems[field.key].splice(index, 1);
+            this.updateFormData(field);
+        },
+
+        updateFormData(field) {
+            this.formData[field.key] = this.selectedItems[field.key].map(item => {
+                const updated = { ...item._raw, ...item };
+                delete updated._raw;
+                return updated;
+            });
         },
 
         closeDropdown(key) {
@@ -357,7 +424,7 @@ export default {
 .form-control,
 .form-select {
     border-width: 1px;
-    border-color: gray;
+    border-color: #d2d2d2;
 }
 
 .form-control:focus,
@@ -449,5 +516,35 @@ export default {
 .summary-textarea::placeholder {
     font-weight: 400;
     color: #cbd5e1;
+}
+
+/* ── Search results dropdown ── */
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    z-index: 1050;
+    margin-top: -10px;
+}
+
+.search-result-item {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-result-item:hover {
+    background: #f8fafc;
+}
+
+.search-result-item:last-child {
+    border-bottom: none !important;
+}
+
+.result-details {
+    flex: 1;
 }
 </style>

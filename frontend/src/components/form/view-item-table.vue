@@ -1,7 +1,6 @@
 <template>
     <div>
 
-
         <!-- Summary info row (optional, shown when item exists) -->
         <div v-if="summaryFields && summaryFields.length" class="summary-row mb-4">
             <div class="row">

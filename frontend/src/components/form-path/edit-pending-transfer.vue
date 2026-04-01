@@ -39,7 +39,21 @@
               </div>
             </div>
             <edit-form v-else :fields="fields" :item="item" :summaryFields="summaryFields" submitLabel="Update Transfer"
-              @update="handleUpdate" @cancel="$router.push('/stock-transfer/pending-transfer')" />
+              @update="handleUpdate" @cancel="$router.push('/stock-transfer/pending-transfer')">
+              <template #col-item_key="row">
+                {{ row.booktype }}:{{ row.bookitemkey }}
+              </template>
+              <template #col-product_details="row">
+                <div class="d-flex flex-column gap-1">
+                  <span class="fw-bold text-dark fs-6">{{ row.title || '—' }}</span>
+                  <div class="text-secondary small d-flex flex-column">
+                    <span v-if="row.author">Author: {{ row.author }}</span>
+                    <span v-if="row.bookedition">Edition: {{ row.bookedition }}</span>
+                    <span v-if="row.ISBN">ISBN: {{ row.ISBN }}</span>
+                  </div>
+                </div>
+              </template>
+            </edit-form>
           </div>
         </div>
       </div>
@@ -61,26 +75,49 @@ export default {
       loading: false,
       item: {},
       branchOptions: [],
-      summaryFields: [
-        { label: "Reference No", key: "stfNo" },
-        { label: "Status", key: "status" },
-      ],
     };
   },
   computed: {
     fields() {
       return [
         {
-          label: "Item",
-          key: "item_id",
+          key: "lines",
+          label: "Product Name",
           type: "search",
-          endpoint: "/items/search",
+          required: true,
+          placeholder: "Search product by name or code…",
+          method: "get",
+          endpoint: "/books/search",
           labelKey: "name",
           valueKey: "id",
-          placeholder: "Search item…",
           minChars: 1,
           debounce: 350,
           col: 12,
+          tableColumns: [
+            { label: "Item Key", key: "item_key" },
+            { label: "Product Details", key: "product_details" },
+            { label: "Quantity", key: "qty", editable: true },
+          ],
+        },
+      ];
+    },
+    summaryFields() {
+      return [
+        {
+          label: "Reference",
+          key: "stfNo",
+          type: "text",
+          disabled: true
+        },
+        {
+          label: "Memo",
+          key: "remarks",
+          type: "textarea",
+          placeholder: "Enter memo...",
+        },
+        {
+          label: "Status",
+          key: "status",
         },
       ];
     },
@@ -92,7 +129,7 @@ export default {
   methods: {
     async fetchBranches() {
       try {
-        const responseData = await api.get("/warehouse/branches");
+        const responseData = await api.get("/warehouse/departments");
         const raw = Array.isArray(responseData)
           ? responseData
           : responseData?.data ?? [];
@@ -106,18 +143,23 @@ export default {
     },
     async fetchTransferDetails() {
       this.loading = true;
-      const id = this.$route.params.id;
+      const stfNo = this.$route.params.id;
       try {
-        const responseData = await api.get("/warehouse/stf/list");
-        const list = Array.isArray(responseData.data) ? responseData.data
-          : Array.isArray(responseData) ? responseData : [];
-        const found = list.find(t => String(t.id) === String(id));
-        if (found) {
-          // Map itemName to name so EditForm's search field pre-fills correctly
-          this.item = {
-            ...found,
-            name: found.itemName || found.itemKey || ""
-          };
+        const responseData = await api.get(`/warehouse/stf/data?stfNo=${stfNo}`);
+
+        if (responseData.info) {
+          // Clone the info object to item
+          this.item = { ...responseData.info };
+          
+          // Map lines directly into item_id so the edit-form search field picks it up as an array
+          if (Array.isArray(responseData.lines)) {
+            this.item.lines = responseData.lines.map(line => ({
+              ...line,
+              id: line.id || line.value, 
+              name: line.name || line.title || line.itemKey,
+              qty: line.qty || line.qtyDelivered || 1
+            }));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch transfer details:", error);
@@ -128,7 +170,13 @@ export default {
     async handleUpdate(formData) {
       this.loading = true;
       try {
-        await api.post("/warehouse/stf/update", formData);
+        // Clean up data for the backend
+        const payload = { ...formData };
+        
+        // Remove 'status' string to avoid triggering the backend bug with fail($message, $status)
+        delete payload.status;
+        
+        await api.post("/warehouse/stf/update", payload);
         this.$router.push("/stock-transfer/pending-transfer");
       } catch (error) {
         console.error("Failed to update transfer:", error);

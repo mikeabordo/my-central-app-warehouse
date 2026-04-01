@@ -2,12 +2,27 @@
 /****** Utils ******/
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap");
 
 .search-dropdown .search-info .customers li a img {
   -webkit-transition: all 0.5s;
   -moz-transition: all 0.5s;
   -o-transition: all 0.5s;
   transition: all 0.5s;
+}
+
+:root {
+  /* Toggle Button Variables (Template Palette) */
+  --bg: #FAFBFE;
+  --ink: #1B2850;
+  --ink2: #5B6670;
+  --ink3: #adb5bd;
+  --surface: #ffffff;
+  --border2: #dbe0e6;
+  --on-bg: #1B2850;
+  --on-fg: #ffffff;
+  --mono: 'Geist Mono', monospace;
+  --green: #28C76F;
 }
 
 /******* Base *******/
@@ -39237,4 +39252,59 @@ label span {
     font-size: 1.1rem;
     font-weight: 600;
     color: #212529;
+}
+
+/* Toggle Switch */
+.tgl-mini {
+position: relative;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+width: 100px;
+height: 36px;
+border-radius: 18px;
+background: var(--surface) !important;
+border: 1px solid var(--border2) !important;
+cursor: pointer;
+overflow: hidden;
+user-select: none;
+}
+.tgl-mini input { display: none; }
+.tgl-mini .fill {
+position: absolute; inset: 0;
+background: var(--on-bg) !important;
+transform: translateX(-100%);
+transition: transform 0.4s cubic-bezier(0.77,0,0.175,1);
+}
+.tgl-mini input:checked ~ .fill { transform: translateX(0); }
+.tgl-mini .lbl {
+position: absolute;
+font-size: 10px;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+font-weight: 500;
+font-family: var(--mono);
+transition: opacity 0.2s, transform 0.25s;
+pointer-events: none;
+display: flex; align-items: center; gap: 5px;
+}
+.tgl-mini .dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.tgl-mini .lbl-inactive { color: var(--ink2) !important; opacity: 1; transform: scale(1); }
+.tgl-mini .dot-inactive { background: var(--ink3) !important; }
+.tgl-mini input:checked ~ .lbl-inactive { opacity: 0; transform: scale(0.85); }
+.tgl-mini .lbl-active { color: var(--on-fg) !important; opacity: 0; transform: scale(0.85); }
+.tgl-mini .dot-active { background: var(--green) !important; box-shadow: 0 0 6px var(--green) !important; }
+.tgl-mini input:checked ~ .lbl-inactive ~ .lbl-active { opacity: 1; transform: scale(1); }
+
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }

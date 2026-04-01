@@ -1,11 +1,40 @@
 <template>
     <form @submit.prevent="handleSubmit">
-        <!-- Summary info row (optional, shown when field is present) -->
-        <div v-if="summaryFields && summaryFields.length" class="summary-row mb-4 d-flex flex-wrap gap-3">
+        <!-- Summary info row (optional, for Ref, Locations, etc.) -->
+        <div v-if="summaryFields && summaryFields.length" class="summary-row mb-4 d-flex gap-3">
             <div v-for="field in summaryFields" :key="field.key" class="summary-item">
                 <div class="summary-card shadow-sm">
                     <span class="summary-label">{{ field.label }}</span>
-                    <span class="summary-value">{{ item?.[field.key] || '—' }}</span>
+
+                    <!-- Editable Card Value -->
+                    <template v-if="field.type === 'select'">
+                        <div class="custom-dropdown" v-click-outside="() => closeSummaryDropdown(field.key)">
+                            <div class="dropdown-trigger fw-bold fs-5" @click="toggleSummaryDropdown(field.key)">
+                                {{ getSelectedLabel(field) || field.placeholder || 'Select' }}
+                                <vue-feather type="chevron-down" size="16" class="ms-1"></vue-feather>
+                            </div>
+                            <div v-if="openSummaryDropdowns[field.key]" class="dropdown-menu-custom shadow-lg show">
+                                <div v-for="opt in field.options" :key="getOptionValue(opt)"
+                                    class="dropdown-item-custom" @click="selectSummaryOption(field, opt)">
+                                    {{ getOptionLabel(opt) }}
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-else-if="field.type === 'textarea'">
+                        <textarea v-model="formData[field.key]" class="summary-textarea fw-600 fs-6 shadow-none"
+                            style="background: transparent; resize: none;" rows="1"
+                            :placeholder="field.placeholder || ''"></textarea>
+                    </template>
+                    <template v-else-if="field.type === 'text'">
+                        <input v-model="formData[field.key]" :disabled="field.disabled"
+                            class="form-control border-0 p-0 fw-bold fs-5 shadow-none"
+                            :class="{ 'text-muted': field.disabled }" style="background: transparent;"
+                            :placeholder="field.placeholder || ''" />
+                    </template>
+                    <template v-else>
+                        <span class="summary-value">{{ formData[field.key] || item?.[field.key] || '—' }}</span>
+                    </template>
                 </div>
             </div>
         </div>
@@ -16,64 +45,74 @@
                         <label class="form-label">{{ field.label }}</label>
 
                         <!-- ── API Search field ── -->
-                        <div v-if="isSearch(field)" class="search-field-wrapper">
-                            <input type="text" class="form-control mb-3" v-model="searchQueries[field.key]"
-                                :placeholder="field.placeholder || `Search ${field.label}…`"
-                                @input="onSearchInput(field, $event)" @keydown.escape="closeDropdown(field.key)"
-                                autocomplete="off" />
-                            <!-- Loading spinner inside input -->
-                            <div v-if="searchLoading[field.key]" class="search-spinner" style="top: 20px;">
-                                <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
+                        <div v-if="isSearch(field)" class="search-field-wrapper"
+                            v-click-outside="() => closeDropdown(field.key)">
+                            <div class="position-relative" style="z-index: 1051;">
+                                <input type="text" class="form-control mb-3" v-model="searchQueries[field.key]"
+                                    :placeholder="field.placeholder || `Search ${field.label}…`"
+                                    @input="onSearchInput(field, $event)" @keydown.escape="closeDropdown(field.key)"
+                                    autocomplete="off" />
+                                <!-- Loading spinner inside input -->
+                                <div v-if="searchLoading[field.key]" class="search-spinner" style="top: 20px;">
+                                    <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
+                                </div>
+
+                                <!-- Results Dropdown -->
+                                <div v-if="searchResults[field.key] && searchResults[field.key].length"
+                                    class="search-results-dropdown shadow-lg border rounded">
+                                    <ul class="list-unstyled mb-0">
+                                        <li v-for="result in searchResults[field.key]" :key="getOptionValue(result)"
+                                            class="search-result-item p-2 border-bottom"
+                                            @click="selectSearchResult(field, result)">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="result-details">
+                                                    <slot :name="'col-product_details'" v-bind="result._raw">
+                                                        <span class="fw-bold">{{ getOptionLabel(result) }}</span>
+                                                    </slot>
+                                                </div>
+                                                <vue-feather type="plus-circle" size="16"
+                                                    class="text-primary"></vue-feather>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
-                            <!-- Results Table -->
-                            <div class="table-responsive border rounded">
-                                <table class="table mb-0">
-                                    <thead>
+                            <!-- No results state (inline) -->
+                            <div v-if="searchNoResult[field.key]" class="text-danger small mb-2">
+                                No results found
+                            </div>
+
+                            <!-- Selected Items Table -->
+                            <div v-if="selectedItems[field.key] && selectedItems[field.key].length"
+                                class="table-responsive border rounded mt-2">
+                                <table class="table table-hover mb-0">
+                                    <thead class="bg-light">
                                         <tr>
                                             <th v-for="col in (field.tableColumns || [{ label: 'Result', key: 'label' }])"
                                                 :key="col.key">
                                                 {{ col.label }}
                                             </th>
-                                            <th style="width: 100px;">Action</th>
+                                            <th style="width: 80px;" class="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- Initial state / Empty search -->
-                                        <tr
-                                            v-if="!searchQueries[field.key] || searchQueries[field.key].length < (field.minChars || 1)">
-                                            <td :colspan="(field.tableColumns ? field.tableColumns.length : 1) + 1"
-                                                class="text-center text-muted py-4">
-                                                Type to search...
+                                        <tr v-for="(item, idx) in selectedItems[field.key]" :key="idx">
+                                            <td v-for="col in (field.tableColumns || [])" :key="col.key">
+                                                <template v-if="col.editable || col.key === 'qty'">
+                                                    <input type="number" v-model.number="item[col.key]"
+                                                        class="form-control form-control-sm" style="width: 80px;"
+                                                        min="1" @input="updateFormData(field)">
+                                                </template>
+                                                <slot v-else :name="'col-' + col.key" v-bind="item._raw">
+                                                    {{ col.key === 'label' ? item.label : (item._raw &&
+                                                        item._raw[col.key]) }}
+                                                </slot>
                                             </td>
-                                        </tr>
-                                        <!-- Loading state -->
-                                        <tr v-else-if="searchLoading[field.key]">
-                                            <td :colspan="(field.tableColumns ? field.tableColumns.length : 1) + 1"
-                                                class="text-center py-4">
-                                                <span class="spinner-border spinner-border-sm text-primary me-2"></span>
-                                                Searching...
-                                            </td>
-                                        </tr>
-                                        <!-- No results state -->
-                                        <tr v-else-if="searchNoResult[field.key]">
-                                            <td :colspan="(field.tableColumns ? field.tableColumns.length : 1) + 1"
-                                                class="text-center text-muted py-4">
-                                                No results found
-                                            </td>
-                                        </tr>
-                                        <!-- Results state -->
-                                        <tr v-else v-for="result in searchResults[field.key]"
-                                            :key="getOptionValue(result)">
-                                            <td v-for="col in (field.tableColumns || [{ label: 'Result', key: 'label' }])"
-                                                :key="col.key">
-                                                {{ col.key === 'label' ? getOptionLabel(result) : (result._raw &&
-                                                    result._raw[col.key]) }}
-                                            </td>
-                                            <td>
-                                                <button type="button" class="btn btn-sm btn-outline-primary"
-                                                    @click="selectSearchResult(field, result)">
-                                                    Select
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-danger border-0"
+                                                    @click="removeSelectedItem(field, idx)">
+                                                    <vue-feather type="trash-2" size="16"></vue-feather>
                                                 </button>
                                             </td>
                                         </tr>
@@ -138,8 +177,26 @@ export default {
             searchResults: {},
             searchLoading: {},
             searchNoResult: {},
+            selectedItems: {}, // Track selected items
+            openSummaryDropdowns: {},
             _debounceTimers: {},
         };
+    },
+
+    directives: {
+        'click-outside': {
+            mounted(el, binding) {
+                el.clickOutsideEvent = (event) => {
+                    if (!(el === event.target || el.contains(event.target))) {
+                        binding.value();
+                    }
+                };
+                document.addEventListener('click', el.clickOutsideEvent);
+            },
+            unmounted(el) {
+                document.removeEventListener('click', el.clickOutsideEvent);
+            },
+        },
     },
 
     watch: {
@@ -160,7 +217,14 @@ export default {
         },
         fields: {
             handler(newFields) {
-                this.initFormData(newFields);
+                this.initFormData(newFields, this.summaryFields);
+            },
+            immediate: true,
+            deep: true,
+        },
+        summaryFields: {
+            handler(newSummary) {
+                this.initFormData(this.fields, newSummary);
             },
             immediate: true,
             deep: true,
@@ -188,35 +252,67 @@ export default {
             if (!n || n === 12) return "col-12";
             return `col-12 col-md-${n}`;
         },
-        initFormData(fields) {
-            const fresh = { ...this.item };
-            const queries = {};
-            const results = {};
-            const loading = {};
-            const noResult = {};
+        initFormData(fields, summaries = []) {
+            const current = { ...this.formData };
+            const queries = { ...this.searchQueries };
+            const results = { ...this.searchResults };
+            const loading = { ...this.searchLoading };
+            const noResult = { ...this.searchNoResult };
+            const selected = { ...this.selectedItems };
 
-            fields.forEach((f) => {
-                if (fresh[f.key] === undefined) {
-                    fresh[f.key] = f.value !== undefined && f.value !== null ? f.value : "";
+            const all = [...fields, ...summaries];
+
+            all.forEach((f) => {
+                // If it's a field from item and formData is empty, use item value
+                if (current[f.key] === undefined || current[f.key] === "") {
+                    current[f.key] = this.item?.[f.key] !== undefined ? this.item[f.key]
+                        : (f.value !== undefined && f.value !== null ? f.value : "");
+                } else if (f.value !== undefined && (f.disabled || f.type === 'text')) {
+                    // Force update specific values if provided as props (rare for Edit but possible)
+                    if (f.disabled) current[f.key] = f.value;
                 }
-                queries[f.key] = this.isSearch(f) ? (fresh[f.labelKey || 'name'] || '') : "";
-                results[f.key] = [];
-                loading[f.key] = false;
-                noResult[f.key] = false;
+
+                if (queries[f.key] === undefined) {
+                    queries[f.key] = this.isSearch(f) ? (this.item?.[f.labelKey || 'name'] || '') : "";
+                    results[f.key] = [];
+                    loading[f.key] = false;
+                    noResult[f.key] = false;
+                }
+
+                if (this.isSearch(f)) {
+                    // Initialize selected items from existing data if it's an array
+                    if (Array.isArray(current[f.key])) {
+                        selected[f.key] = current[f.key].map(it => ({
+                            ...it, // Spread all fields from the original object
+                            value: it.id || it.value,
+                            label: it.label || it.name || it.title,
+                            qty: it.qty || 1,
+                            _raw: it
+                        }));
+                        // Clear the search query as we have active items
+                        queries[f.key] = "";
+                    } else if (!selected[f.key]) {
+                        selected[f.key] = [];
+                    }
+                }
             });
 
-            this.formData = fresh;
+            this.formData = current;
             this.searchQueries = queries;
             this.searchResults = results;
             this.searchLoading = loading;
             this.searchNoResult = noResult;
+            this.selectedItems = selected;
         },
 
         onSearchInput(field, event) {
             const query = event.target.value;
             this.searchQueries[field.key] = query;
 
-            this.formData[field.key] = "";
+            if (!this.selectedItems[field.key] || this.selectedItems[field.key].length === 0) {
+                this.formData[field.key] = "";
+            }
+
             this.searchResults[field.key] = [];
             this.searchNoResult[field.key] = false;
 
@@ -234,14 +330,31 @@ export default {
             this.searchLoading[field.key] = true;
             this.searchNoResult[field.key] = false;
 
+            console.log(`[Edit Search - ${field.key}] Initiating search...`);
+            console.log(`[Edit Search - ${field.key}] Endpoint:`, field.endpoint);
+            console.log(`[Edit Search - ${field.key}] Query:`, query);
+
             try {
-                const response = await api.get(
-                    `${field.endpoint}?q=${encodeURIComponent(query)}&limit=10`
-                );
+                const method = (field.method || "get").toLowerCase();
+                console.log(`[Edit Search - ${field.key}] Method being used:`, method);
+                let response;
+
+                if (method === "post") {
+                    console.log(`[Edit Search - ${field.key}] Request Payload:`, { search: query, limit: 10 });
+                    response = await api.post(field.endpoint, { search: query, limit: 10 });
+                } else {
+                    const fullUrl = `${field.endpoint}?search=${encodeURIComponent(query)}&limit=10`;
+                    console.log(`[Edit Search - ${field.key}] Request URL:`, fullUrl);
+                    response = await api.get(fullUrl);
+                }
+
+                console.log(`[Edit Search - ${field.key}] Raw Response from Backend:`, response);
 
                 const raw = Array.isArray(response)
                     ? response
                     : response.data ?? [];
+
+                console.log(`[Edit Search - ${field.key}] Extracted Array for Mapping:`, raw);
 
                 const valueKey = field.valueKey ?? "id";
                 const labelKey = field.labelKey ?? "name";
@@ -252,9 +365,11 @@ export default {
                     _raw: item,
                 }));
 
+                console.log(`[Edit Search - ${field.key}] Final Mapped Search Results:`, this.searchResults[field.key]);
+
                 this.searchNoResult[field.key] = this.searchResults[field.key].length === 0;
             } catch (err) {
-                console.error(`[EditForm] search error for "${field.key}":`, err);
+                console.error(`[Edit Search - ${field.key}] Search Error:`, err);
                 this.searchResults[field.key] = [];
                 this.searchNoResult[field.key] = true;
             } finally {
@@ -263,14 +378,65 @@ export default {
         },
 
         selectSearchResult(field, result) {
-            this.formData[field.key] = result.value;
-            this.searchQueries[field.key] = result.label;
+            if (!this.selectedItems[field.key]) {
+                this.selectedItems[field.key] = [];
+            }
+
+            const isDup = this.selectedItems[field.key].some(item => {
+                if (item.value && result.value) return item.value === result.value;
+                if (item._raw && result._raw && item._raw.id) return item._raw.id === result._raw.id;
+                return JSON.stringify(item._raw) === JSON.stringify(result._raw);
+            });
+
+            if (!isDup) {
+                this.selectedItems[field.key] = [
+                    ...this.selectedItems[field.key],
+                    { ...result, qty: 1 }
+                ];
+            }
+
+            this.updateFormData(field);
+            this.searchQueries[field.key] = "";
             this.searchResults[field.key] = [];
             this.searchNoResult[field.key] = false;
         },
 
+        removeSelectedItem(field, index) {
+            this.selectedItems[field.key].splice(index, 1);
+            this.updateFormData(field);
+        },
+
+        updateFormData(field) {
+            this.formData[field.key] = this.selectedItems[field.key].map(item => {
+                // Return a clean object with updated values
+                const updated = { ...item._raw, ...item };
+                delete updated._raw; // Remove the helper ref
+                return updated;
+            });
+        },
+
         closeDropdown(key) {
             this.searchResults[key] = [];
+        },
+
+        // ── Summary Dropdowns ──
+        toggleSummaryDropdown(key) {
+            const current = !!this.openSummaryDropdowns[key];
+            this.openSummaryDropdowns = {}; // close others
+            this.openSummaryDropdowns[key] = !current;
+        },
+        closeSummaryDropdown(key) {
+            this.openSummaryDropdowns[key] = false;
+        },
+        selectSummaryOption(field, opt) {
+            this.formData[field.key] = this.getOptionValue(opt);
+            this.closeSummaryDropdown(field.key);
+        },
+        getSelectedLabel(field) {
+            const val = this.formData[field.key];
+            if (!val) return null;
+            const opt = field.options.find(o => this.getOptionValue(o) === val);
+            return opt ? this.getOptionLabel(opt) : val;
         },
 
         handleSubmit() {
@@ -288,7 +454,7 @@ export default {
 .form-control,
 .form-select {
     border-width: 1px;
-    border-color: gray;
+    border-color: #d2d2d2;
 }
 
 .form-control:focus,
@@ -298,10 +464,6 @@ export default {
 }
 
 /* ── Search field ── */
-.search-field-wrapper {
-    position: relative;
-}
-
 .search-spinner {
     position: absolute;
     right: 10px;
@@ -310,29 +472,109 @@ export default {
     pointer-events: none;
 }
 
-/* ── Summary Info ── */
-.summary-card {
+/* ── Custom Dropdown for Summary ── */
+.custom-dropdown {
+    position: relative;
+    cursor: pointer;
+}
+
+.dropdown-trigger {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    color: #1e293b;
+    padding: 2px 0;
+}
+
+.dropdown-menu-custom {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    min-width: 200px;
     background: #fff;
-    border: 1px solid #e9ecef;
     border-radius: 8px;
-    padding: 16px 20px;
-    height: 100%;
+    margin-top: 8px;
+    overflow: hidden;
+    display: none;
 }
 
-.summary-label {
-    font-size: 0.75rem;
-    color: #6c757d;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 4px;
+.dropdown-menu-custom.show {
+    display: block;
 }
 
-.summary-value {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #212529;
+.dropdown-item-custom {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #475569;
+    transition: all 0.2s;
+}
+
+.dropdown-item-custom:hover {
+    background: #f8fafc;
+    color: #FF9F43;
+}
+
+/* ── Custom Textarea for Summary ── */
+.summary-textarea {
+    width: 100%;
+    padding: 3px 5px;
+    margin-top: 4px;
+    font-weight: 500;
+    color: #334155;
+    min-height: 24px;
+    line-height: 1.4;
+    transition: all 0.2s ease;
+    border: 1px solid #cbd5e1;
+}
+
+.summary-textarea:focus {
+    outline: none;
+    background: rgba(255, 159, 67, 0.03);
+    /* Subtle brand hint */
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-left: -10px;
+    width: calc(100% + 20px);
+    border: 1px solid #FF9F43;
+}
+
+.summary-textarea::placeholder {
+    font-weight: 400;
+    color: #cbd5e1;
+}
+
+/* ── Search results dropdown ── */
+.search-field-wrapper {
+    position: relative;
+}
+
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    z-index: 1050;
+    margin-top: -10px;
+}
+
+.search-result-item {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-result-item:hover {
+    background: #f8fafc;
+}
+
+.search-result-item:last-child {
+    border-bottom: none !important;
+}
+
+.result-details {
+    flex: 1;
 }
 </style>

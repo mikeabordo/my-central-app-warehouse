@@ -46,7 +46,8 @@
                         </div>
                         <div class="dropdown-menu search-dropdown" aria-labelledby="dropdownMenuClickable">
                             <div class="search-info">
-                                <h6><span><vue-feather type="search" class="feather-16"></vue-feather></span>Recent Searches
+                                <h6><span><vue-feather type="search" class="feather-16"></vue-feather></span>Recent
+                                    Searches
                                 </h6>
                                 <ul class="search-tags">
                                     <li><a href="javascript:void(0);">Products</a></li>
@@ -55,24 +56,26 @@
                                 </ul>
                             </div>
                             <div class="search-info">
-                                <h6><span><vue-feather type="help-circle" class="feather-16"></vue-feather></span>Help</h6>
+                                <h6><span><vue-feather type="help-circle" class="feather-16"></vue-feather></span>Help
+                                </h6>
                                 <p>How to Change Product Volume from 0 to 200 on Inventory management</p>
                                 <p>Change Product Name</p>
                             </div>
                             <div class="search-info">
-                                <h6><span><vue-feather type="user" class="feather-16"></vue-feather></span>Customers</h6>
+                                <h6><span><vue-feather type="user" class="feather-16"></vue-feather></span>Customers
+                                </h6>
                                 <ul class="customers">
                                     <li>
-                                        <a href="javascript:void(0);">Aron Varu<img src="@/assets/img/profiles/avator1.jpg"
-                                                alt="" class="img-fluid"></a>
+                                        <a href="javascript:void(0);">Aron Varu<img
+                                                src="@/assets/img/profiles/avator1.jpg" alt="" class="img-fluid"></a>
                                     </li>
                                     <li>
-                                        <a href="javascript:void(0);">Jonita<img src="@/assets/img/profiles/avatar-01.jpg"
-                                                alt="" class="img-fluid"></a>
+                                        <a href="javascript:void(0);">Jonita<img
+                                                src="@/assets/img/profiles/avatar-01.jpg" alt="" class="img-fluid"></a>
                                     </li>
                                     <li>
-                                        <a href="javascript:void(0);">Aaron<img src="@/assets/img/profiles/avatar-10.jpg"
-                                                alt="" class="img-fluid"></a>
+                                        <a href="javascript:void(0);">Aaron<img
+                                                src="@/assets/img/profiles/avatar-10.jpg" alt="" class="img-fluid"></a>
                                     </li>
                                 </ul>
                             </div>
@@ -83,34 +86,96 @@
             <!-- /Search -->
 
 
-            <!-- Select Store -->
-            <li class="nav-item dropdown has-arrow main-drop select-store-dropdown">
-                <a href="javascript:void(0);" class="dropdown-toggle nav-link select-store" data-bs-toggle="dropdown">
+            <!-- Dropdown Menu with Toggle Button -->
+            <li class="nav-item dropdown has-arrow main-drop nav-item-toggle-dropdown">
+                <a href="javascript:void(0);" class="dropdown-toggle nav-link select-store" data-bs-toggle="dropdown"
+                    data-bs-auto-close="false">
                     <span class="user-info">
                         <span class="user-letter">
                             <img src="@/assets/img/store/store-01.png" alt="Store Logo" class="img-fluid">
                         </span>
                         <span class="user-detail">
-                            <span class="user-name">Select Store</span>
+                            <span class="user-name">Select Branch</span>
                         </span>
                     </span>
                 </a>
+                <!-- Dropdown Items -->
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a href="javascript:void(0);" class="dropdown-item">
-                        <img src="@/assets/img/store/store-01.png" alt="Store Logo" class="img-fluid"> Grocery Alpha
+                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
+                        @click="toggleItemCheckbox('store-01')">
+                        <img src="@/assets/img/store/store-01.png" alt="Store Logo"
+                            class="img-fluid me-3 dropdown-logo">
+                        <span class="flex-grow-1">Grocery Alpha</span>
+                        <label class="tgl-mini ms-auto mb-0" @click.stop>
+                            <input type="checkbox" id="store-01" checked>
+                            <div class="fill"></div>
+                            <span class="lbl lbl-inactive">
+                                <span class="dot dot-inactive"></span>
+                                Inactive
+                            </span>
+                            <span class="lbl lbl-active">
+                                <span class="dot dot-active"></span>
+                                Active
+                            </span>
+                        </label>
                     </a>
-                    <a href="javascript:void(0);" class="dropdown-item">
-                        <img src="@/assets/img/store/store-02.png" alt="Store Logo" class="img-fluid"> Grocery Apex
+                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
+                        @click="toggleItemCheckbox('store-02')">
+                        <img src="@/assets/img/store/store-02.png" alt="Store Logo"
+                            class="img-fluid me-3 dropdown-logo">
+                        <span class="flex-grow-1">Grocery Apex</span>
+                        <label class="tgl-mini ms-auto mb-0" @click.stop>
+                            <input type="checkbox" id="store-02">
+                            <div class="fill"></div>
+                            <span class="lbl lbl-inactive">
+                                <span class="dot dot-inactive"></span>
+                                Inactive
+                            </span>
+                            <span class="lbl lbl-active">
+                                <span class="dot dot-active"></span>
+                                Active
+                            </span>
+                        </label>
                     </a>
-                    <a href="javascript:void(0);" class="dropdown-item">
-                        <img src="@/assets/img/store/store-03.png" alt="Store Logo" class="img-fluid"> Grocery Bevy
+                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
+                        @click="toggleItemCheckbox('store-03')">
+                        <img src="@/assets/img/store/store-03.png" alt="Store Logo"
+                            class="img-fluid me-3 dropdown-logo">
+                        <span class="flex-grow-1">Grocery Bevy</span>
+                        <label class="tgl-mini ms-auto mb-0" @click.stop>
+                            <input type="checkbox" id="store-03" checked>
+                            <div class="fill"></div>
+                            <span class="lbl lbl-inactive">
+                                <span class="dot dot-inactive"></span>
+                                Inactive
+                            </span>
+                            <span class="lbl lbl-active">
+                                <span class="dot dot-active"></span>
+                                Active
+                            </span>
+                        </label>
                     </a>
-                    <a href="javascript:void(0);" class="dropdown-item">
-                        <img src="@/assets/img/store/store-04.png" alt="Store Logo" class="img-fluid"> Grocery Eden
+                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
+                        @click="toggleItemCheckbox('store-04')">
+                        <img src="@/assets/img/store/store-04.png" alt="Store Logo"
+                            class="img-fluid me-3 dropdown-logo">
+                        <span class="flex-grow-1">Grocery Eden</span>
+                        <label class="tgl-mini ms-auto mb-0" @click.stop>
+                            <input type="checkbox" id="store-04">
+                            <div class="fill"></div>
+                            <span class="lbl lbl-inactive">
+                                <span class="dot dot-inactive"></span>
+                                Inactive
+                            </span>
+                            <span class="lbl lbl-active">
+                                <span class="dot dot-active"></span>
+                                Active
+                            </span>
+                        </label>
                     </a>
                 </div>
             </li>
-            <!-- /Select Store -->
+            <!-- Dropdown Menu with Toggle Button -->
 
             <!-- Flag -->
             <li class="nav-item dropdown has-arrow flag-nav nav-item-box">
@@ -393,9 +458,55 @@ export default {
                 }
             }
         },
+        toggleItemCheckbox(id) {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+            }
+        },
     },
     beforeUnmount() {
         document.removeEventListener('mouseover', this.handleMouseover);
     },
 };
 </script>
+
+<style scoped>
+.nav-item-toggle-dropdown .dropdown-menu {
+    min-width: 320px;
+    padding: 10px 0;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item {
+    padding: 12px 15px;
+    border-radius: 0;
+    transition: all 0.3s;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item .dropdown-logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item:hover {
+    background-color: rgba(255, 159, 67, 0.05) !important;
+}
+
+/* Ensure the toggle labels don't get forced colors from dropdown-item hover/active */
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item:hover .tgl-mini,
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item.active .tgl-mini {
+    background: var(--surface) !important;
+    border-color: var(--border2) !important;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item:hover .lbl-inactive,
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item.active .lbl-inactive {
+    color: var(--ink2) !important;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item:hover .lbl-active,
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item.active .lbl-active {
+    color: var(--on-fg) !important;
+}
+</style>

@@ -10,7 +10,7 @@
 
 
                         <router-link to="/stock-transfer/pending-transfer" class="mb-item">
-                            Stock Transfer
+                            Pending Transfer
                         </router-link>
 
                         <div class="mb-separator">
@@ -40,7 +40,21 @@
                     <div class="col-sm-12">
                         <add-form submitLabel="Submit Transfer" :fields="fields" :summaryFields="summaryFields"
                             :loading="loading" @create="submitTransfer"
-                            @cancel="$router.push('/stock-transfer/pending-transfer')" />
+                            @cancel="$router.push('/stock-transfer/pending-transfer')">
+                            <template #col-item_key="row">
+                                {{ row.booktype }}:{{ row.bookitemkey }}
+                            </template>
+                            <template #col-product_details="row">
+                                <div class="d-flex flex-column gap-1">
+                                    <span class="fw-bold text-dark fs-6">{{ row.title || '—' }}</span>
+                                    <div class="text-secondary small d-flex flex-column">
+                                        <span v-if="row.author">Author: {{ row.author }}</span>
+                                        <span v-if="row.bookedition">Edition: {{ row.bookedition }}</span>
+                                        <span v-if="row.ISBN">ISBN: {{ row.ISBN }}</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </add-form>
                     </div>
                 </div>
             </div>
@@ -73,17 +87,17 @@ export default {
                     type: "search",
                     required: true,
                     placeholder: "Search product by name or code…",
-                    endpoint: "/items/search",
-                    labelKey: "name",
-                    valueKey: "id",
+                    method: "get",
+                    endpoint: "/books/search",
+                    labelKey: "name", // IMPORTANT: Must match the property from backend (e.g., "title", "name", "itemName")
+                    valueKey: "id",   // IMPORTANT: Must be the unique ID property from backend (e.g., "id", "book_id")
                     minChars: 1,
                     debounce: 350,
                     col: 12,
                     tableColumns: [
-                        { label: "#", key: "id" },
-                        { label: "SKU", key: "sku" },
-                        { label: "Product", key: "itemKey" },
-                        { label: "Quantity", key: "qty" },
+                        { label: "Item Key", key: "item_key" },
+                        { label: "Product Details", key: "product_details" },
+                        { label: "Quantity", key: "qty", editable: true },
                     ],
                 },
             ];
@@ -143,7 +157,7 @@ export default {
         },
         async fetchBranches() {
             try {
-                const responseData = await api.get("/warehouse/branches");
+                const responseData = await api.get("/warehouse/departments");
                 const raw = Array.isArray(responseData)
                     ? responseData
                     : responseData?.data ?? [];
