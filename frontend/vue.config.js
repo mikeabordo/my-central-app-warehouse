@@ -14,6 +14,7 @@ module.exports = defineConfig({
     ],
   },
   devServer: {
+    allowedHosts: 'all',
     proxy: {
       '/api': {
         target: 'https://mycentralapp.com',

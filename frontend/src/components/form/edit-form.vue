@@ -1,40 +1,11 @@
 <template>
     <form @submit.prevent="handleSubmit">
-        <!-- Summary info row (optional, for Ref, Locations, etc.) -->
-        <div v-if="summaryFields && summaryFields.length" class="summary-row mb-4 d-flex gap-3">
+        <!-- Summary info row (optional, shown when field is present) -->
+        <div v-if="summaryFields && summaryFields.length" class="summary-row mb-4 d-flex flex-wrap gap-3">
             <div v-for="field in summaryFields" :key="field.key" class="summary-item">
                 <div class="summary-card shadow-sm">
                     <span class="summary-label">{{ field.label }}</span>
-
-                    <!-- Editable Card Value -->
-                    <template v-if="field.type === 'select'">
-                        <div class="custom-dropdown" v-click-outside="() => closeSummaryDropdown(field.key)">
-                            <div class="dropdown-trigger fw-bold fs-5" @click="toggleSummaryDropdown(field.key)">
-                                {{ getSelectedLabel(field) || field.placeholder || 'Select' }}
-                                <vue-feather type="chevron-down" size="16" class="ms-1"></vue-feather>
-                            </div>
-                            <div v-if="openSummaryDropdowns[field.key]" class="dropdown-menu-custom shadow-lg show">
-                                <div v-for="opt in field.options" :key="getOptionValue(opt)"
-                                    class="dropdown-item-custom" @click="selectSummaryOption(field, opt)">
-                                    {{ getOptionLabel(opt) }}
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                    <template v-else-if="field.type === 'textarea'">
-                        <textarea v-model="formData[field.key]" class="summary-textarea fw-600 fs-6 shadow-none"
-                            style="background: transparent; resize: none;" rows="1"
-                            :placeholder="field.placeholder || ''"></textarea>
-                    </template>
-                    <template v-else-if="field.type === 'text'">
-                        <input v-model="formData[field.key]" :disabled="field.disabled"
-                            class="form-control border-0 p-0 fw-bold fs-5 shadow-none"
-                            :class="{ 'text-muted': field.disabled }" style="background: transparent;"
-                            :placeholder="field.placeholder || ''" />
-                    </template>
-                    <template v-else>
-                        <span class="summary-value">{{ formData[field.key] || '—' }}</span>
-                    </template>
+                    <span class="summary-value">{{ item?.[field.key] || '—' }}</span>
                 </div>
             </div>
         </div>
@@ -45,7 +16,7 @@
                         <label class="form-label">{{ field.label }}</label>
 
                         <!-- ── API Search field ── -->
-                        <div v-if="isSearch(field)" class="search-field-wrapper ">
+                        <div v-if="isSearch(field)" class="search-field-wrapper">
                             <input type="text" class="form-control mb-3" v-model="searchQueries[field.key]"
                                 :placeholder="field.placeholder || `Search ${field.label}…`"
                                 @input="onSearchInput(field, $event)" @keydown.escape="closeDropdown(field.key)"
@@ -138,9 +109,8 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-end mb-5">
-            <button type="submit" class="btn btn-submit" :disabled="loading">
-                <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+        <div class="d-flex justify-content-end mt-3 mb-5">
+            <button type="submit" class="btn btn-submit">
                 {{ submitLabel }}
             </button>
         </div>
@@ -151,16 +121,15 @@
 import api from "@/services/api";
 
 export default {
-    name: "AddForm",
+    name: "EditForm",
     props: {
-        title: { type: String, default: "Add New" },
-        submitLabel: { type: String, default: "Submit" },
+        submitLabel: { type: String, default: "Save Changes" },
         fields: { type: Array, default: () => [] },
+        item: { type: Object, default: () => ({}) },
         summaryFields: { type: Array, default: () => [] },
-        loading: { type: Boolean, default: false },
     },
 
-    emits: ["create", "cancel"],
+    emits: ["update", "cancel"],
 
     data() {
         return {
@@ -169,38 +138,29 @@ export default {
             searchResults: {},
             searchLoading: {},
             searchNoResult: {},
-            openSummaryDropdowns: {},
             _debounceTimers: {},
         };
     },
 
-    directives: {
-        'click-outside': {
-            mounted(el, binding) {
-                el.clickOutsideEvent = (event) => {
-                    if (!(el === event.target || el.contains(event.target))) {
-                        binding.value();
-                    }
-                };
-                document.addEventListener('click', el.clickOutsideEvent);
-            },
-            unmounted(el) {
-                document.removeEventListener('click', el.clickOutsideEvent);
-            },
-        },
-    },
-
     watch: {
-        fields: {
-            handler(newFields) {
-                this.initFormData(newFields, this.summaryFields);
+        item: {
+            handler(newVal) {
+                if (newVal) {
+                    this.formData = { ...newVal };
+                    // For search fields, we might want to pre-fill searchQueries with a label
+                    this.fields.forEach(f => {
+                        if (this.isSearch(f)) {
+                            this.searchQueries[f.key] = newVal[f.labelKey || 'name'] || '';
+                        }
+                    });
+                }
             },
             immediate: true,
             deep: true,
         },
-        summaryFields: {
-            handler(newSummary) {
-                this.initFormData(this.fields, newSummary);
+        fields: {
+            handler(newFields) {
+                this.initFormData(newFields);
             },
             immediate: true,
             deep: true,
@@ -228,33 +188,24 @@ export default {
             if (!n || n === 12) return "col-12";
             return `col-12 col-md-${n}`;
         },
-        initFormData(fields, summaries = []) {
-            // Merge existing data if any (to avoid blowing away current inputs)
-            const current = { ...this.formData };
-            const queries = { ...this.searchQueries };
-            const results = { ...this.searchResults };
-            const loading = { ...this.searchLoading };
-            const noResult = { ...this.searchNoResult };
+        initFormData(fields) {
+            const fresh = { ...this.item };
+            const queries = {};
+            const results = {};
+            const loading = {};
+            const noResult = {};
 
-            const all = [...fields, ...summaries];
-
-            all.forEach((f) => {
-                if (current[f.key] === undefined || current[f.key] === "") {
-                    current[f.key] = f.value !== undefined && f.value !== null ? f.value : "";
-                } else if (f.value !== undefined && f.disabled) {
-                    // Force update disabled values (like Ref #)
-                    current[f.key] = f.value;
+            fields.forEach((f) => {
+                if (fresh[f.key] === undefined) {
+                    fresh[f.key] = f.value !== undefined && f.value !== null ? f.value : "";
                 }
-
-                if (queries[f.key] === undefined) {
-                    queries[f.key] = "";
-                    results[f.key] = [];
-                    loading[f.key] = false;
-                    noResult[f.key] = false;
-                }
+                queries[f.key] = this.isSearch(f) ? (fresh[f.labelKey || 'name'] || '') : "";
+                results[f.key] = [];
+                loading[f.key] = false;
+                noResult[f.key] = false;
             });
 
-            this.formData = current;
+            this.formData = fresh;
             this.searchQueries = queries;
             this.searchResults = results;
             this.searchLoading = loading;
@@ -303,7 +254,7 @@ export default {
 
                 this.searchNoResult[field.key] = this.searchResults[field.key].length === 0;
             } catch (err) {
-                console.error(`[AddForm] search error for "${field.key}":`, err);
+                console.error(`[EditForm] search error for "${field.key}":`, err);
                 this.searchResults[field.key] = [];
                 this.searchNoResult[field.key] = true;
             } finally {
@@ -322,28 +273,8 @@ export default {
             this.searchResults[key] = [];
         },
 
-        // ── Summary Dropdowns ──
-        toggleSummaryDropdown(key) {
-            const current = !!this.openSummaryDropdowns[key];
-            this.openSummaryDropdowns = {}; // close others
-            this.openSummaryDropdowns[key] = !current;
-        },
-        closeSummaryDropdown(key) {
-            this.openSummaryDropdowns[key] = false;
-        },
-        selectSummaryOption(field, opt) {
-            this.formData[field.key] = this.getOptionValue(opt);
-            this.closeSummaryDropdown(field.key);
-        },
-        getSelectedLabel(field) {
-            const val = this.formData[field.key];
-            if (!val) return null;
-            const opt = field.options.find(o => this.getOptionValue(o) === val);
-            return opt ? this.getOptionLabel(opt) : val;
-        },
-
         handleSubmit() {
-            this.$emit("create", { ...this.formData });
+            this.$emit("update", { ...this.formData });
         },
 
         handleCancel() {
@@ -379,75 +310,29 @@ export default {
     pointer-events: none;
 }
 
-/* ── Custom Dropdown for Summary ── */
-.custom-dropdown {
-    position: relative;
-    cursor: pointer;
-}
-
-.dropdown-trigger {
+/* ── Summary Info ── */
+.summary-card {
     display: flex;
-    align-items: center;
-    color: #1e293b;
-    padding: 2px 0;
-}
-
-.dropdown-menu-custom {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 1000;
-    min-width: 200px;
+    flex-direction: column;
     background: #fff;
+    border: 1px solid #e9ecef;
     border-radius: 8px;
-    margin-top: 8px;
-    overflow: hidden;
-    display: none;
+    padding: 16px 20px;
+    height: 100%;
 }
 
-.dropdown-menu-custom.show {
-    display: block;
+.summary-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
 }
 
-.dropdown-item-custom {
-    padding: 10px 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #475569;
-    transition: all 0.2s;
-}
-
-.dropdown-item-custom:hover {
-    background: #f8fafc;
-    color: #FF9F43;
-}
-
-/* ── Custom Textarea for Summary ── */
-.summary-textarea {
-    width: 100%;
-    padding: 3px 5px;
-    margin-top: 4px;
-    font-weight: 500;
-    color: #334155;
-    min-height: 24px;
-    line-height: 1.4;
-    transition: all 0.2s ease;
-    border: 1px solid #cbd5e1;
-}
-
-.summary-textarea:focus {
-    outline: none;
-    background: rgba(255, 159, 67, 0.03);
-    /* Subtle brand hint */
-    border-radius: 4px;
-    padding: 6px 10px;
-    margin-left: -10px;
-    width: calc(100% + 20px);
-    border: 1px solid #FF9F43;
-}
-
-.summary-textarea::placeholder {
-    font-weight: 400;
-    color: #cbd5e1;
+.summary-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #212529;
 }
 </style>

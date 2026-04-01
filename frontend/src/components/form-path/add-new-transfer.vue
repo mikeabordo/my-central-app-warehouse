@@ -38,8 +38,9 @@
 
                 <div class="row">
                     <div class="col-sm-12">
-                        <add-form submitLabel="Submit Transfer" :fields="fields" :loading="loading"
-                            @create="submitTransfer" @cancel="$router.push('/stock-transfer/pending-transfer')" />
+                        <add-form submitLabel="Submit Transfer" :fields="fields" :summaryFields="summaryFields"
+                            :loading="loading" @create="submitTransfer"
+                            @cancel="$router.push('/stock-transfer/pending-transfer')" />
                     </div>
                 </div>
             </div>
@@ -59,7 +60,7 @@ export default {
     data() {
         return {
             nextSTFNo: "",
-            branchOptions: [],
+            branchOptions: ["Test", "Test2"],
             loading: false,
         };
     },
@@ -67,20 +68,11 @@ export default {
         fields() {
             return [
                 {
-                    key: "ref",
-                    label: "Reference No",
-                    type: "text",
-                    required: true,
-                    disabled: true,
-                    value: this.nextSTFNo,
-                    col: 12,
-                },
-                {
                     key: "item_id",
-                    label: "Item",
+                    label: "Product Name",
                     type: "search",
                     required: true,
-                    placeholder: "Search item by name or code…",
+                    placeholder: "Search product by name or code…",
                     endpoint: "/items/search",
                     labelKey: "name",
                     valueKey: "id",
@@ -88,38 +80,42 @@ export default {
                     debounce: 350,
                     col: 12,
                     tableColumns: [
-                        { label: "Product", key: "itemKey" },
+                        { label: "#", key: "id" },
                         { label: "SKU", key: "sku" },
-                        { label: "Edition", key: "edition" },
-                        { label: "ISBN", key: "isbn" },
+                        { label: "Product", key: "itemKey" },
                         { label: "Quantity", key: "qty" },
                     ],
+                },
+            ];
+        },
+        summaryFields() {
+            return [
+                {
+                    key: "ref",
+                    label: "Reference",
+                    type: "text",
+                    disabled: true,
+                    value: this.nextSTFNo,
                 },
                 {
                     key: "fromBranch",
                     label: "From Location",
                     type: "select",
-                    required: true,
-                    placeholder: "Select from location",
-                    col: 6,
+                    placeholder: "Select From",
                     options: this.branchOptions,
                 },
                 {
                     key: "toBranch",
                     label: "To Location",
                     type: "select",
-                    required: true,
-                    placeholder: "Select to location",
-                    col: 6,
+                    placeholder: "Select To",
                     options: this.branchOptions,
                 },
                 {
                     key: "remarks",
-                    label: "Remarks",
+                    label: "Memo",
                     type: "textarea",
-                    placeholder: "Enter remarks or notes",
-                    rows: 4,
-                    col: 12,
+                    placeholder: "Enter memo...",
                 },
             ];
         },

@@ -26,14 +26,17 @@
                   <!-- We can add specific scoped slots for items here if needed -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
+                      <router-link :to="`/stock-transfer/view/${item.stfNo}`" class="btn btn-sm btn-icon-only btn-outline-secondary" title="View">
+                        <vue-feather type="eye" size="14"></vue-feather>
+                      </router-link>
                       <button type="button" class="btn btn-sm btn-icon-only btn-outline-info" title="Print"
                         data-bs-toggle="modal" data-bs-target="#print-item" @click="printItem(item)">
                         <vue-feather type="printer" size="14"></vue-feather>
                       </button>
-                      <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-success"
-                        title="Edit" data-bs-toggle="modal" data-bs-target="#edit-transfer" @click="editItem(item)">
+                      <router-link v-if="item.isOwner" :to="`/stock-transfer/edit/${item.id}`" class="btn btn-sm btn-icon-only btn-outline-success"
+                        title="Edit">
                         <vue-feather type="edit" size="14"></vue-feather>
-                      </button>
+                      </router-link>
                       <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-danger"
                         title="Cancel" data-bs-toggle="modal" data-bs-target="#cancel-transfer"
                         @click="cancelItem(item)">
@@ -57,9 +60,6 @@
     :details="selectedItem ? `Reference: ${selectedItem.stfNo || ''}` : ''" :item="selectedItem"
     confirm-label="Yes, cancel" cancel-label="No" @confirm="handleCancelConfirm" />
 
-  <!-- Edit Transfer Modal -->
-  <edit-modal modal-id="edit-transfer" title="Edit Transfer" :item="selectedItem || {}" :fields="editTransferFields"
-    @update="handleEditTransfer" />
 
   <!-- Print Transfer Modal -->
   <print-modal modal-id="print-item" :item="selectedItem" title="Stock Transfer Slip" :fields="printFields" />
@@ -68,7 +68,6 @@
 <script>
 
 import CancelModal from "@/components/action-modal/cancel-modal.vue";
-import EditModal from "@/components/action-modal/edit-modal.vue";
 import PrintModal from "@/components/action-modal/print-modal.vue";
 import api from "@/services/api";
 
@@ -76,7 +75,6 @@ export default {
   name: "PendingTransfer",
   components: {
     CancelModal,
-    EditModal,
     PrintModal,
   },
   data() {
@@ -84,50 +82,6 @@ export default {
       items: [],
       selectedItem: null,
       loading: false,
-      editTransferFields: [
-        {
-          label: "Item",
-          key: "item_id",
-          type: "search",
-          endpoint: "/items/search",
-          labelKey: "name",
-          valueKey: "id",
-          placeholder: "Search item…",
-          minChars: 1,
-          debounce: 350,
-          col: 12,
-        },
-        {
-          label: "Reference No",
-          key: "ref",
-          type: "text",
-          placeholder: "Enter reference number",
-          col: 12,
-        },
-        {
-          label: "From Location",
-          key: "fromBranch",
-          type: "select",
-          placeholder: "Select from location",
-          col: 6,
-          options: [],
-        },
-        {
-          label: "To Location",
-          key: "toBranch",
-          type: "select",
-          placeholder: "Select to location",
-          col: 6,
-          options: [],
-        },
-        {
-          label: "Remarks",
-          key: "remarks",
-          type: "text",
-          placeholder: "Enter remarks",
-          col: 12,
-        },
-      ],
 
       headers: [
         { text: "#", value: "id", sortable: false },
@@ -169,21 +123,6 @@ export default {
     },
     printItem(item) {
       this.selectedItem = { ...item };
-    },
-    editItem(item) {
-      this.selectedItem = { ...item };
-    },
-    async handleEditTransfer(updatedData) {
-      console.log("Edit Transfer Data:", updatedData);
-      this.loading = true;
-      try {
-        await api.post("/warehouse/stf/update", updatedData);
-        await this.fetchTransfers();
-      } catch (error) {
-        console.error("Failed to update transfer:", error);
-      } finally {
-        this.loading = false;
-      }
     },
     cancelItem(item) {
       this.selectedItem = { ...item };
