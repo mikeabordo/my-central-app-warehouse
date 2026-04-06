@@ -10,9 +10,9 @@
             <h6>Manage Completed Transfer</h6>
           </div>
           <div class="page-btn">
-            <button type="button" class="btn btn-added" data-bs-toggle="modal" data-bs-target="#add-transfer">
+            <router-link to="/stock-transfer/add-new-transfer" class="btn btn-added btn-gradient warm">
               <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Transfer
-            </button>
+            </router-link>
           </div>
         </div>
         <div class="row">
@@ -24,14 +24,17 @@
                   <!-- We can add specific scoped slots for items here if needed -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
+                      <router-link :to="`/stock-transfer/view/${item.stfNo}`" class="btn btn-sm btn-icon-only btn-outline-secondary" title="View">
+                        <vue-feather type="eye" size="14"></vue-feather>
+                      </router-link>
                       <button type="button" class="btn btn-sm btn-icon-only btn-outline-info" title="Print"
                         data-bs-toggle="modal" data-bs-target="#print-item" @click="printItem(item)">
                         <vue-feather type="printer" size="14"></vue-feather>
                       </button>
-                      <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-success"
-                        title="Edit" data-bs-toggle="modal" data-bs-target="#edit-transfer" @click="editItem(item)">
+                      <router-link v-if="item.isOwner" :to="`/stock-transfer/edit/${item.stfNo}`" class="btn btn-sm btn-icon-only btn-outline-success"
+                        title="Edit">
                         <vue-feather type="edit" size="14"></vue-feather>
-                      </button>
+                      </router-link>
                       <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-danger"
                         title="Cancel" data-bs-toggle="modal" data-bs-target="#cancel-item" @click="cancelItem(item)">
                         <vue-feather type="x-circle" size="14"></vue-feather>
@@ -46,74 +49,21 @@
       </div>
     </div>
   </div>
-  <!-- Add New Transfer Modal -->
-  <add-modal modal-id="add-transfer" title="Add New Transfer" submit-label="Submit" size="lg"
-    :fields="addTransferFields" @create="handleAddTransfer" />
-  <!-- Edit Transfer Modal -->
-  <edit-modal modal-id="edit-transfer" title="Edit Transfer" submit-label="Save Changes" size="lg"
-    :fields="addTransferFields" :initial-data="selectedItem" @update="handleEditTransfer" />
 </template>
 
 <script>
 import api from '@/services/api';
-import AddModal from '@/components/modal/add-modal.vue';
-import EditModal from '@/components/action-modal/edit-modal.vue';
 
 export default {
   name: "CompletedTransfer",
   components: {
-    AddModal,
-    EditModal,
   },
   data() {
     return {
       items: [],
       selectedItem: null,
       loading: false,
-      addTransferFields: [
-        {
-          label: "Item",
-          key: "item_id",
-          type: "search",
-          endpoint: "/items/search",
-          labelKey: "name",
-          valueKey: "id",
-          placeholder: "Search item…",
-          minChars: 1,
-          debounce: 350,
-          col: 12,
-        },
-        {
-          label: "Reference No",
-          key: "ref",
-          type: "text",
-          placeholder: "Enter reference number",
-          col: 12,
-        },
-        {
-          label: "From Location",
-          key: "fromBranch",
-          type: "select",
-          placeholder: "Select from location",
-          col: 6,
-          options: [],
-        },
-        {
-          label: "To Location",
-          key: "toBranch",
-          type: "select",
-          placeholder: "Select to location",
-          col: 6,
-          options: [],
-        },
-        {
-          label: "Remarks",
-          key: "remarks",
-          type: "text",
-          placeholder: "Enter remarks",
-          col: 12,
-        },
-      ],
+      addTransferFields: [],
       headers: [
         { text: "#", value: "id", sortable: false },
         { text: "Reference No", value: "stfNo", sortable: true },
@@ -149,23 +99,8 @@ export default {
     printItem(item) {
       this.selectedItem = { ...item };
     },
-    editItem(item) {
+    cancelItem(item) {
       this.selectedItem = { ...item };
-    },
-    handleEditTransfer(updatedData) {
-      this.selectedItem = { ...updatedData };
-    },
-    async handleAddTransfer(newData) {
-      this.loading = true;
-      try {
-        await api.post("/warehouse/stf/add", newData);
-        // TODO: refetch list from backend once the endpoint is ready
-        await this.fetchTransfers();
-      } catch (error) {
-        console.error("Failed to create transfer:", error);
-      } finally {
-        this.loading = false;
-      }
     },
   },
 };

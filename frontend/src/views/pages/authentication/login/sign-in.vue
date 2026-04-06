@@ -14,13 +14,8 @@
               <div class="form-login mb-3">
                 <label class="form-label">ID Number</label>
                 <div class="form-addons">
-                  <Field
-                    name="idnumber"
-                    type="text"
-                    placeholder="Enter your ID number"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.idnumber }"
-                  />
+                  <Field name="idnumber" type="text" placeholder="Enter your ID number" class="form-control"
+                    :class="{ 'is-invalid': errors.idnumber }" />
                   <div class="invalid-feedback">{{ errors.idnumber }}</div>
                   <div class="emailshow text-danger" id="idnumber"></div>
                   <img src="@/assets/img/icons/mail.svg" alt="img" />
@@ -29,20 +24,13 @@
               <div class="form-login mb-3">
                 <label class="form-label">Password</label>
                 <div class="pass-group">
-                  <Field
-                    name="password"
-                    :type="showPassword ? 'text' : 'password'"
-                    placeholder="Enter your password"
-                    class="form-control pass-input"
-                    :class="{ 'is-invalid': errors.password }"
-                  />
+                  <Field name="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password"
+                    class="form-control pass-input" :class="{ 'is-invalid': errors.password }" />
                   <span @click="toggleShow" class="toggle-password">
-                    <i
-                      :class="{
-                        'fas fa-eye': showPassword,
-                        'fas fa-eye-slash': !showPassword,
-                      }"
-                    ></i>
+                    <i :class="{
+                      'fas fa-eye': showPassword,
+                      'fas fa-eye-slash': !showPassword,
+                    }"></i>
                   </span>
                   <div class="invalid-feedback">{{ errors.password }}</div>
                   <div class="emailshow text-danger" id="password"></div>
@@ -56,7 +44,8 @@
               </div>
               <div class="form-login">
                 <button type="submit" class="btn btn-login" :disabled="isLoading">
-                  <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status"
+                    aria-hidden="true"></span>
                   {{ isLoading ? 'Signing in...' : 'Sign In' }}
                 </button>
               </div>
@@ -65,9 +54,7 @@
                 {{ apiError }}
               </div>
               <div class="form-sociallink">
-                <div
-                  class="my-4 d-flex justify-content-center align-items-center copyright-text"
-                >
+                <div class="my-4 d-flex justify-content-center align-items-center copyright-text">
                   <p>
                     &copy; {{ new Date().getFullYear() }} Central Book Supply, Inc. All rights
                     reserved
@@ -145,23 +132,13 @@ export default {
           router.push("/dashboard");
         } else {
           // Server returned a failure response
-          apiError.value = response.message || "Login failed. Please try again.";
+          apiError.value = "Credentials are incorrect";
         }
       } catch (error) {
         // Handle specific error cases from the API
         if (error.status === 401) {
           // Invalid credentials
-          const errorData = error.data;
-          if (errorData && errorData.errors) {
-            if (errorData.errors.idnumber) {
-              document.getElementById("idnumber").innerHTML = errorData.errors.idnumber;
-            }
-            if (errorData.errors.password) {
-              document.getElementById("password").innerHTML = errorData.errors.password;
-            }
-          } else {
-            apiError.value = error.message || "Invalid ID Number or password.";
-          }
+          apiError.value = error.message || "Invalid ID Number or password.";
         } else if (error.status === 422) {
           // Validation errors from server
           const errorData = error.data;
@@ -196,14 +173,16 @@ export default {
 <style scoped>
 /* Override the global constraints on the logo container and image */
 .login-logo {
-  max-width: 300px !important; /* This overrides the 150px in _login.scss */
+  max-width: 300px !important;
+  /* This overrides the 150px in _login.scss */
   margin: 0 auto !important;
 }
 
 .login-logo img {
   width: 100% !important;
   height: auto !important;
-  max-width: none !important; /* This overrides the max-width: 100% in style.css */
+  max-width: none !important;
+  /* This overrides the max-width: 100% in style.css */
 }
 
 /* Pin the eye icon to the top center of the input field */
@@ -212,8 +191,10 @@ export default {
 }
 
 .toggle-password {
-  top: 10px !important; /* Fixed position from top */
-  transform: none !important; /* Disable the middle-centering that causes jumping */
+  top: 10px !important;
+  /* Fixed position from top */
+  transform: none !important;
+  /* Disable the middle-centering that causes jumping */
   right: 10px !important;
 }
 
@@ -225,6 +206,7 @@ export default {
 /* Remove Bootstrap's default error/alert icon (background image) */
 .form-control.is-invalid {
   background-image: none !important;
-  padding-right: 0.75rem !important; /* Reset padding to standard if needed */
+  padding-right: 0.75rem !important;
+  /* Reset padding to standard if needed */
 }
 </style>
