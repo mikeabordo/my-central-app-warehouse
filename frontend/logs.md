@@ -1,8 +1,0 @@
-index.js??clonedRuleSet-40.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/form/add-form.vue?vue&type=script&lang=js:144 [Search - item_id] Initiating search...
-index.js??clonedRuleSet-40.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/form/add-form.vue?vue&type=script&lang=js:145 [Search - item_id] Endpoint: /books/search
-index.js??clonedRuleSet-40.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/form/add-form.vue?vue&type=script&lang=js:146 [Search - item_id] Query: tax
-index.js??clonedRuleSet-40.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/form/add-form.vue?vue&type=script&lang=js:149 [Search - item_id] Method being used: get
-index.js??clonedRuleSet-40.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/form/add-form.vue?vue&type=script&lang=js:162 [Search - item_id] Request URL: /books/search?q=tax&limit=10
-index.js??clonedRuleSet-40.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/form/add-form.vue?vue&type=script&lang=js:165 [Search - item_id] Raw Response from Backend: []
-index.js??clonedRuleSet-40.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/form/add-form.vue?vue&type=script&lang=js:167 [Search - item_id] Extracted Array for Mapping: []
-index.js??clonedRuleSet-40.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/form/add-form.vue?vue&type=script&lang=js:175 [Search - item_id] Final Mapped Search Results: Proxy(Array) {}

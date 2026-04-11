@@ -5,7 +5,8 @@
         <div class="page-wrapper-new p-0">
           <div class="content">
             <div class="modal-header border-0 custom-modal-header justify-content-between">
-              <div class="page-title">
+              <div class="page-title d-flex align-items-center gap-2">
+                <vue-feather type="alert-triangle" size="32" class="text-warning"></vue-feather>
                 <h4>{{ title }}</h4>
               </div>
               <button
@@ -19,9 +20,9 @@
             </div>
 
             <div class="modal-body custom-modal-body">
-              <p class="mb-2">{{ message }}</p>
+              <p class="mb-4">{{ message }}</p>
 
-              <div v-if="details" class="text-muted small mb-3">
+              <div v-if="details" class="text-muted large mb-3">
                 {{ details }}
               </div>
 

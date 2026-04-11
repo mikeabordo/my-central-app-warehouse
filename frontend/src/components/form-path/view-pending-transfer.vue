@@ -97,7 +97,7 @@ export default {
       this.loading = true;
       const stfNo = this.$route.params.id;
       try {
-        const responseData = await api.get(`/warehouse/stf/data?stfNo=${stfNo}`);
+        const responseData = await api.get(`/warehouse/stf/items?stfNo=${stfNo}`);
 
         // info is an object, lines is an array
         if (responseData.info) {

@@ -1,117 +1,155 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Pill Toggle</title>
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+<template>
+  <div>
+    <layout-header></layout-header>
+    <layout-sidebar></layout-sidebar>
+    <div class="page-wrapper">
+      <div class="content">
+        <div class="page-header justify-content-between">
+          <div class="page-title">
+            <h4>Add Stock Request</h4>
+            <h6>Create a new stock replenishment request</h6>
+          </div>
+          <div class="page-btn">
+            <router-link to="/inventory/stock-request" class="btn btn-added btn-dark">
+              <vue-feather type="arrow-left" class="me-2"></vue-feather>Back to Stock Request
+            </router-link>
+          </div>
+        </div>
 
-:root {
---bg: #f5f2ec;
---ink: #1a1814;
---ink2: #6b6760;
---ink3: #b0ada8;
---surface: #eceae4;
---border2: rgba(26,24,20,0.18);
---on-bg: #1a1814;
---on-fg: #f5f2ec;
---mono: 'Geist Mono', monospace;
---green: #7fffb0;
-}
+        <div class="row">
+          <div class="col-sm-12">
+            <add-form :submitLabel="'Submit Request'" :fields="fields" :summaryFields="summaryFields"
+              @create="submitStockRequest" @cancel="$router.push('/inventory/stock-request')">
 
-body {
-background: var(--bg);
-min-height: 100vh;
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 20px;
-font-family: var(--mono);
-}
+              <template #dropdown-result="row">
+                <div class="book-result-item">
+                  <div class="book-result-primary">
+                    <span class="book-type-badge" v-if="row.booktype">{{ row.booktype }}</span>
+                    <span class="book-item-key fw-bold">{{ row.bookitemkey }}</span>
+                  </div>
+                  <div class="book-result-secondary text-muted small">
+                    {{ row.title || row.description || '—' }}
+                  </div>
+                </div>
+              </template>
+              <template #col-bookitemkey="row">
+                <span class="fw-bold text-dark">{{ row.booktype }}:{{ row.bookitemkey }}</span>
+              </template>
+              <template #col-product_details="row">
+                <div class="d-flex flex-column gap-1">
+                  <span class="fw-bold text-dark fs-6">{{ row.title || '—' }}</span>
+                  <div class="text-secondary small d-flex flex-column">
+                    <span v-if="row.author">Author: {{ row.author }}</span>
+                    <span v-if="row.bookedition">Edition: {{ row.bookedition }}</span>
+                    <span v-if="row.ISBN">ISBN: {{ row.ISBN }}</span>
+                  </div>
+                </div>
+              </template>
 
-.tgl-mini {
-position: relative;
-display: inline-flex;
-align-items: center;
-justify-content: center;
-width: 100px;
-height: 36px;
-border-radius: 18px;
-background: var(--surface);
-border: 1px solid var(--border2);
-cursor: pointer;
-overflow: hidden;
-user-select: none;
-}
-.tgl-mini input { display: none; }
+            </add-form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
-.tgl-mini .fill {
-position: absolute;
-inset: 0;
-background: var(--on-bg);
-transform: translateX(-100%);
-transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
-}
-.tgl-mini input:checked ~ .fill { transform: translateX(0); }
+<script>
+import AddForm from "@/components/form/add-form.vue";
+import api from "@/services/api";
 
-.tgl-mini .lbl {
-position: absolute;
-font-size: 10px;
-letter-spacing: 0.1em;
-text-transform: uppercase;
-font-weight: 500;
-transition: opacity 0.2s, transform 0.25s;
-pointer-events: none;
-display: flex;
-align-items: center;
-gap: 5px;
-}
-.tgl-mini .dot {
-width: 5px;
-height: 5px;
-border-radius: 50%;
-flex-shrink: 0;
-}
+export default {
+  name: "AddStockRequest",
+  components: {
+    AddForm,
+  },
+  data() {
+    return {
+      nextRSNo: "",
+    };
+  },
+  computed: {
+    summaryFields() {
+      return [
+        {
+          key: "RSNo",
+          label: "Reference",
+          type: "text",
+          disabled: true,
+          value: this.nextRSNo,
+        },
+        {
+          key: "remarks",
+          label: "Memo",
+          type: "textarea",
+          placeholder: "Enter memo here...",
+        }
+      ];
+    },
+    fields() {
+      return [
+        {
+          key: "product",
+          label: "Product",
+          type: "search",
+          required: true,
+          placeholder: "Enter product code or title",
+          method: "get",
+          endpoint: "/books/search",
+          labelKey: "title",      // field from API for display
+          valueKey: "id",         // unique identifier field from API
+          minChars: 2,
+          tableColumns: [
+            { label: 'Item Key', key: 'bookitemkey' },
+            { label: 'Product Details', key: 'product_details' },
+            { label: 'Quantity', key: 'qty', editable: true },
+          ]
+        },
+      ];
+    },
+  },
+  created() {
+    this.getNextRSNo();
+  },
+  methods: {
 
-/_ Inactive label — visible by default _/
-.tgl-mini .lbl-inactive { color: var(--ink2); opacity: 1; transform: scale(1); }
-.tgl-mini .dot-inactive { background: var(--ink3); }
-.tgl-mini input:checked ~ .lbl-inactive { opacity: 0; transform: scale(0.85); }
+    async getNextRSNo() {
+      try {
+        const responseData = await api.get("/branches/rs/next");
+        this.nextRSNo =
+          responseData?.RSNo ||
+          responseData?.data?.RSNo ||
+          responseData?.nextRSNo ||
+          responseData?.data?.nextRSNo ||
+          responseData?.data ||
+          "";
+      } catch (error) {
+        console.error("Failed to fetch next RSNo:", error);
+      }
+    },
+    async submitStockRequest(formData) {
+      // The backend expects specific fields. We map the product list to the items format.
+      const payload = {
+        remarks: formData.remarks,
+        items: (formData.product || []).map((item) => {
+          // Backend expects a numeric bookId (integer)
+          // item.value / item.id come back as strings from the API
+          const rawId = item.value ?? item.id ?? item.bookitemkey;
+          return {
+            bookId: parseInt(rawId, 10) || rawId,
+            qty: item.qty || 1,
+          };
+        }),
+      };
+      console.log("[StockRequest] Final Payload:", payload);
 
-/_ Active label — hidden by default _/
-.tgl-mini .lbl-active { color: var(--on-fg); opacity: 0; transform: scale(0.85); }
-.tgl-mini .dot-active { background: var(--green); box-shadow: 0 0 6px var(--green); }
-.tgl-mini input:checked ~ .lbl-inactive ~ .lbl-active { opacity: 1; transform: scale(1); }
-</style>
-
-</head>
-<body>
-
-<!-- OFF state -->
-<label class="tgl-mini">
-  <input type="checkbox">
-  <span class="fill"></span>
-  <span class="lbl lbl-inactive">
-    <span class="dot dot-inactive"></span>Inactive
-  </span>
-  <span class="lbl lbl-active">
-    <span class="dot dot-active"></span>Active
-  </span>
-</label>
-
-<!-- ON state -->
-<label class="tgl-mini">
-  <input type="checkbox" checked>
-  <span class="fill"></span>
-  <span class="lbl lbl-inactive">
-    <span class="dot dot-inactive"></span>Inactive
-  </span>
-  <span class="lbl lbl-active">
-    <span class="dot dot-active"></span>Active
-  </span>
-</label>
-
-</body>
-</html>
+      try {
+        await api.post("/branches/rs/add", payload);
+        this.$router.push("/inventory/stock-request");
+      } catch (error) {
+        console.error("Stock request submission failed:", error);
+      }
+    },
+  },
+};
+</script>

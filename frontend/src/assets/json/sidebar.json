@@ -438,20 +438,5 @@
         "showSubRoute": false
       }
     ]
-  },
-  {
-    "tittle": "",
-    "showAsTab": true,
-    "separateRoute": false,
-    "menu": [
-      {
-        "menuValue": "",
-        "icon": "",
-        "route": "",
-        "active_link": "",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      }
-    ]
   }
 ]

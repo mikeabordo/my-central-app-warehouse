@@ -145,7 +145,7 @@ export default {
       this.loading = true;
       const stfNo = this.$route.params.id;
       try {
-        const responseData = await api.get(`/warehouse/stf/data?stfNo=${stfNo}`);
+        const responseData = await api.get(`/warehouse/stf/items?stfNo=${stfNo}`);
 
         if (responseData.info) {
           // Clone the info object to item

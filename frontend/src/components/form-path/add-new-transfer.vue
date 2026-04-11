@@ -74,7 +74,7 @@ export default {
     data() {
         return {
             nextSTFNo: "",
-            branchOptions: ["Test", "Test2"],
+            branchOptions: [],
             loading: false,
         };
     },
@@ -82,7 +82,9 @@ export default {
         fields() {
             return [
                 {
-                    key: "item_id",
+                    // Keep the key aligned with the STF backend contract:
+                    // `/warehouse/stf/items` returns `{ info, lines }`, and add/update endpoints expect `lines` too.
+                    key: "lines",
                     label: "Product Name",
                     type: "search",
                     required: true,
@@ -111,15 +113,15 @@ export default {
                     disabled: true,
                     value: this.nextSTFNo,
                 },
+                // {
+                //     key: "fromBranch",
+                //     label: "From Location",
+                //     type: "select",
+                //     placeholder: "Select From",
+                //     options: this.branchOptions,
+                // },
                 {
-                    key: "fromBranch",
-                    label: "From Location",
-                    type: "select",
-                    placeholder: "Select From",
-                    options: this.branchOptions,
-                },
-                {
-                    key: "toBranch",
+                    key: "toId",
                     label: "To Location",
                     type: "select",
                     placeholder: "Select To",
@@ -158,24 +160,95 @@ export default {
         async fetchBranches() {
             try {
                 const responseData = await api.get("/warehouse/departments");
-                const raw = Array.isArray(responseData)
-                    ? responseData
-                    : responseData?.data ?? [];
-                this.branchOptions = raw.map((b) => ({
-                    value: b.id || b.branchId || b.value,
-                    label: b.name || b.branchName || b.label,
-                }));
+                // NOTE: Backend responses here have historically varied in shape (array vs { data: [] } vs nested keys).
+                // We defensively extract the first array we can find so the dropdown always has options.
+                const arrayOfOptions = [
+                    responseData,
+                    responseData?.data,
+                ];
+
+                const raw = arrayOfOptions.find(Array.isArray) ?? [];
+
+                this.branchOptions = raw
+                    .map((b) => ({
+                        // Prefer a stable identifier for the backend (usually `id`/`branchId`).
+                        // Using names like `branchstorename` as the value can cause 400s if the API validates IDs.
+                        value:
+                            b?.id ??
+                            "",
+                        // Label is what the user sees in the dropdown.
+                        label:
+                            b?.branchstorename ??
+                            "",
+                    }))
+                    .map((opt) => ({
+                        ...opt,
+                        // If the API doesn't provide a display name, show the identifier instead of rendering "blank" items.
+                        label: opt.label !== "" ? opt.label : String(opt.value ?? ""),
+                    }))
+                    // Avoid rendering truly empty entries if the API returns partial objects.
+                    .filter((opt) => opt.value !== "");
             } catch (error) {
                 console.error("Failed to fetch branches:", error);
             }
         },
         async submitTransfer(formData) {
             this.loading = true;
+            // `add-form.vue` emits UI-friendly shapes; the backend expects a strict payload,
+            // so we map and sanitize here (same pattern used in `frontend/reference.md`).
+            console.log("[STF] Raw formData:", formData);
+
+            // Minimal validation (AddForm doesn't enforce `required` on submit).
+            if (!formData?.toId) {
+                console.error("[STF] Missing required field: toId");
+                this.loading = false;
+                return;
+            }
+
+            const items = (formData.lines || []).map((line) => {
+                const rawId =
+                    line?.id ??
+                    line?.value;
+
+                const parsedId = parseInt(rawId, 10);
+                return {
+                    bookId: Number.isNaN(parsedId) ? rawId : parsedId,
+                    qty: line?.qty || 1,
+                };
+            });
+
+            const payload = {
+                // Backend naming is inconsistent across endpoints (`toId` vs `toBranch`).
+                // We send both to keep the request compatible while the contract is clarified.
+                toId: formData.toId,
+                toBranch: formData.toId,
+                // The next reference is shown to the user; some backends require it as `stfNo` on create.
+                stfNo: formData?.stfNo ?? formData?.ref ?? this.nextSTFNo,
+                remarks: formData.remarks,
+                // Backend STF add expects `items` (same mapping pattern as `frontend/reference.md`).
+                // We also include `lines` for compatibility with other STF endpoints that use `{ info, lines }`.
+                items,
+                lines: items,
+            };
+
+            if (!payload.items.length) {
+                console.error("[STF] Please add at least one product line before submitting.");
+                this.loading = false;
+                return;
+            }
+
+            console.log("[STF] Final payload:", payload);
+
             try {
-                await api.post("/warehouse/stf/add", formData);
+                await api.post("/warehouse/stf/add", payload);
                 this.$router.push("/stock-transfer/pending-transfer");
             } catch (error) {
-                console.error("Transfer submission failed:", error);
+                // `api.js` attaches `status` and `data` to thrown errors; include them for faster backend debugging.
+                console.error("Transfer submission failed:", {
+                    message: error?.message,
+                    status: error?.status,
+                    data: error?.data,
+                });
             } finally {
                 this.loading = false;
             }

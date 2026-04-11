@@ -9,13 +9,17 @@
                     <!-- Editable Card Value -->
                     <template v-if="field.type === 'select'">
                         <div class="custom-dropdown" v-click-outside="() => closeSummaryDropdown(field.key)">
-                            <div class="dropdown-trigger fw-bold fs-5" @click="toggleSummaryDropdown(field.key)">
+                            <!-- Stop event propagation so other click-outside handlers don't interfere with opening/selecting. -->
+                            <div class="dropdown-trigger fw-bold fs-5" @mousedown.stop @click.stop="toggleSummaryDropdown(field.key)">
                                 {{ getSelectedLabel(field) || field.placeholder || 'Select' }}
                                 <vue-feather type="chevron-down" size="16" class="ms-1"></vue-feather>
                             </div>
                             <div v-if="openSummaryDropdowns[field.key]" class="dropdown-menu-custom shadow-lg show">
-                                <div v-for="opt in field.options" :key="getOptionValue(opt)"
-                                    class="dropdown-item-custom" @click="selectSummaryOption(field, opt)">
+                                <div v-if="!field.options || field.options.length === 0" class="dropdown-item-custom text-muted" @mousedown.stop @click.stop>
+                                    No options available
+                                </div>
+                                <div v-else v-for="opt in field.options" :key="getOptionValue(opt)"
+                                    class="dropdown-item-custom" @mousedown.stop @click.stop="selectSummaryOption(field, opt)">
                                     {{ getOptionLabel(opt) }}
                                 </div>
                             </div>
@@ -404,7 +408,10 @@ export default {
         },
         getSelectedLabel(field) {
             const val = this.formData[field.key];
-            if (!val) return null;
+
+            // Treat only null/undefined/empty-string as "no selection" so falsy IDs like 0 still work.
+            if (val === null || val === undefined || val === "") return null;
+
             const opt = field.options.find(o => this.getOptionValue(o) === val);
             return opt ? this.getOptionLabel(opt) : val;
         },
@@ -434,6 +441,12 @@ export default {
 }
 
 /* ── Search field ── */
+/* Summary row must stay above the main form controls so its dropdowns remain clickable. */
+.summary-row {
+    position: relative;
+    z-index: 1061;
+}
+
 .search-field-wrapper {
     position: relative;
 }
@@ -463,16 +476,17 @@ export default {
     position: absolute;
     top: 100%;
     left: 0;
-    z-index: 1000;
+    /* Keep summary dropdown above the search field/results dropdown (which uses z-index ~1050/1051). */
+    z-index: 9999;
     min-width: 200px;
     background: #fff;
     border-radius: 8px;
     margin-top: 8px;
-    overflow: hidden;
-    display: none;
-}
-
-.dropdown-menu-custom.show {
+    /* Keep the dropdown compact; scroll when there are many options. */
+    max-height: 240px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Rendered only when open via `v-if`, so keep it visible when mounted. */
     display: block;
 }
 

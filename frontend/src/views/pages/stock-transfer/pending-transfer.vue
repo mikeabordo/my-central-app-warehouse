@@ -89,7 +89,6 @@ export default {
         { text: "Location", value: "fromBranch", sortable: true },
         { text: "Remarks", value: "remarks", sortable: true },
         { text: "Status", value: "status", sortable: true },
-        { text: "User", value: "fullName", sortable: true },
         { text: "Actions", value: "actions", sortable: false },
       ],
       printFields: [
