@@ -7,14 +7,14 @@
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4 d-none d-md-flex">
           <div class="minimal-breadcrumb">
-            <router-link to="/stock-transfer/pending-transfer" class="mb-item">
-              Pending Transfer
+            <router-link :to="backPath" class="mb-item">
+              {{ backLabel }}
             </router-link>
             <div class="mb-separator">
               <vue-feather type="chevron-right" size="16"></vue-feather>
             </div>
             <div class="mb-item active">
-              View Pending Transfer
+              View {{ backLabel }}
             </div>
           </div>
         </nav>
@@ -25,7 +25,7 @@
             <h4>View Transfer Details</h4>
           </div>
           <div class="page-btn">
-            <router-link to="/stock-transfer/pending-transfer" class="btn btn-added btn-dark">
+            <router-link :to="backPath" class="btn btn-added btn-dark">
               <vue-feather type="arrow-left" class="me-2"></vue-feather>Back to List
             </router-link>
           </div>
@@ -65,9 +65,23 @@ import ViewDetail from "@/components/form/view-item-table.vue";
 import api from "@/services/api";
 
 export default {
-  name: "ViewPendingTransfer",
+  name: "ViewTransfer",
   components: {
     ViewDetail,
+  },
+  props: {
+    backPath: {
+      type: String,
+      default: "/stock-transfer/pending-transfer",
+    },
+    backLabel: {
+      type: String,
+      default: "Pending Transfer",
+    },
+    id: {
+      type: [String, Number],
+      required: true,
+    },
   },
   data() {
     return {
@@ -95,7 +109,7 @@ export default {
   methods: {
     async fetchTransferDetails() {
       this.loading = true;
-      const stfNo = this.$route.params.id;
+      const stfNo = this.id;
       try {
         const responseData = await api.get(`/warehouse/stf/items?stfNo=${stfNo}`);
 

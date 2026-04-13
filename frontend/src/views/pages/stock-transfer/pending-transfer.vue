@@ -33,7 +33,7 @@
                   <!-- Actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
-                      <router-link :to="`/stock-transfer/view/${item.stfNo}`"
+                      <router-link :to="{ name: 'view-transfer', params: { id: item.stfNo }, query: { backPath: '/stock-transfer/pending-transfer', backLabel: 'Pending Transfer' } }"
                         class="btn btn-sm btn-icon-only btn-outline-secondary" title="View">
                         <vue-feather type="eye" size="14"></vue-feather>
                       </router-link>

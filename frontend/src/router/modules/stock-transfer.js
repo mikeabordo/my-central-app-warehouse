@@ -5,9 +5,10 @@ import { RouterView } from 'vue-router'
 import PendingTransfer from '@/views/pages/stock-transfer/pending-transfer.vue'
 import CompletedTransfer from '@/views/pages/stock-transfer/completed-transfer.vue'
 import CancelledTransfer from '@/views/pages/stock-transfer/cancelled-transfer.vue'
-import AddNewTransfer from '@/components/form-path/add-new-transfer.vue'
+import ProcessingTransfer from '@/views/pages/stock-transfer/processing-transfer.vue'
 
-import ViewPendingTransfer from '@/components/form-path/view-pending-transfer.vue'
+import AddNewTransfer from '@/components/form-path/add-new-transfer.vue'
+import ViewTransfer from '@/components/form-path/view-transfer.vue'
 import EditPendingTransfer from '@/components/form-path/edit-pending-transfer.vue'
 
 export default [
@@ -30,9 +31,19 @@ export default [
                 component: PendingTransfer
             },
             {
+                path: 'processing-transfer',
+                name: 'processing-transfer',
+                component: ProcessingTransfer
+            },
+            {
                 path: 'view/:id',
-                name: 'view-pending-transfer',
-                component: ViewPendingTransfer
+                name: 'view-transfer',
+                component: ViewTransfer,
+                props: route => ({
+                    id: route.params.id,
+                    backPath: route.query.backPath || '/stock-transfer/pending-transfer',
+                    backLabel: route.query.backLabel || 'Pending Transfer'
+                })
             },
             {
                 path: 'edit/:id',
