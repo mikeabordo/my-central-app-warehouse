@@ -22,17 +22,24 @@
                 <dynamic-data-table :headers="headers" :items="items" :loading="loading"
                   searchPlaceholder="Search items...">
                   <!-- We can add specific scoped slots for items here if needed -->
+                  <!-- Status Badge -->
+                  <template #item-status="item">
+                    <span class="badge badge-success-light">
+                      {{ item.status }}
+                    </span>
+                  </template>
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
-                      <router-link :to="`/stock-transfer/view/${item.stfNo}`" class="btn btn-sm btn-icon-only btn-outline-secondary" title="View">
+                      <router-link :to="`/stock-transfer/view/${item.stfNo}`"
+                        class="btn btn-sm btn-icon-only btn-outline-secondary" title="View">
                         <vue-feather type="eye" size="14"></vue-feather>
                       </router-link>
                       <button type="button" class="btn btn-sm btn-icon-only btn-outline-info" title="Print"
                         data-bs-toggle="modal" data-bs-target="#print-item" @click="printItem(item)">
                         <vue-feather type="printer" size="14"></vue-feather>
                       </button>
-                      <router-link v-if="item.isOwner" :to="`/stock-transfer/edit/${item.stfNo}`" class="btn btn-sm btn-icon-only btn-outline-success"
-                        title="Edit">
+                      <router-link v-if="item.isOwner" :to="`/stock-transfer/edit/${item.stfNo}`"
+                        class="btn btn-sm btn-icon-only btn-outline-success" title="Edit">
                         <vue-feather type="edit" size="14"></vue-feather>
                       </router-link>
                       <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-danger"
@@ -105,3 +112,16 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.badge-success-light {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+</style>

@@ -1,383 +1,279 @@
-# API Routes Documentation
+# API & Controllers Documentation: Deep Technical Breakdown
 
-This document provides a comprehensive and detailed breakdown of all the API routes defined in your application (`app/Config/Routes.php`).
+This document provides a highly detailed, comprehensive guide to the core controllers within the central application, including exact payload JSON fields, validation constraints, query parameters, and line-item database schema mapping. **EventPullOutController** and **EventInventoryController** have been purposely excluded.
 
-It includes the characteristics of each route, the controller methods they map to, necessary parameters (query strings or JSON payload), and their expected outputs.
+## Table of Contents
+
+1. [Shared Routes & Configuration](#1-shared-routes--configuration)
+2. [Warehouse API: StockTransferController](#2-warehouse-api-stocktransfercontroller)
+3. [Branches API: RequestStockController](#3-branches-api-requeststockcontroller)
+4. [Branches API: PullOutRequestController](#4-branches-api-pulloutrequestcontroller)
 
 ---
 
-## 1. Authentication Routes
+## 1. Shared Routes & Configuration
 
-These routes are publicly accessible and do not require the `auth` filter.
+These standard routes operate with simple filters and provide basic foundational requests.
 
-### `POST /auth/login`
+- **Authentication API:**
 
-- **Controller:** `Users\AuthController::login`
-- **Characteristics:** Unprotected. Authenticates the user and sets up the session.
-- **Parameters:** JSON Payload
+  - `POST /auth/login` | `POST /auth/logout`
+
+- **Shared Functionality (`App\Controllers\Shared`):**
+
+  - `GET /books/search` - Look up titles.
+  - `POST /books/scan` - Scans bar codes.
+  - `GET /payments/list`
+  - `GET /branches/list`
+
+- **User Subsystem (`App\Controllers\Users`):**
+  - `GET /user/me` - Profile metadata.
+  - `GET /user/branch` - Accessible branches.
+  - `POST /user/branch/activate` - Sets active app session branch.
+
+---
+
+## 2. Warehouse API: StockTransferController
+
+**Namespace:** `App\Controllers\Warehouse\StockTransferController`
+**Filter:** `appAccess:WAREHOUSE`
+**Prefix:** `/warehouse`
+
+This controller manages **Stock Transfer Forms (STFs)**. An STF maps physical goods tracking from their shipment to delivery, usually fulfilling a Stock Request (RS).
+
+### 2.1 STF Management Endpoints
+
+#### `GET /warehouse/stf/list`
+
+Retrieves a paginated list of created STFs.
+
+- **Query Parameters:**
+  - `status` (string, optional) - e.g., `'PENDING'`, `'PROCESSING'`, `'COMPLETED'`. If omitted, gets all.
+- **Output Mapping:** Appends the ownership flag tracking `preparedBy` field comparing against `sessionUserId`.
+
+#### `GET /warehouse/stf/items`
+
+Extracts header and line-item structures for a given transfer.
+
+- **Query Parameters:**
+  - `stfNo` (string, required) - The exact ID of the Stock Transfer Form.
+- **Returns JSON format:** `{ "status": 200, "info": { ... }, "lines": [ ... ] }`
+
+#### `POST /warehouse/stf/add`
+
+Creates a manual Stock Transfer (not tied to an existing RS).
+
+- **Payload (JSON Expected):**
   ```json
   {
-    "idnumber": "User ID Number (string)",
-    "password": "Password (string)"
+    "toId": 2, // Destination Location ID
+    "remarks": "Standard replenishment",
+    "items": [
+      { "bookId": 1205, "qty": 15 },
+      { "bookId": 1206, "qty": 10 }
+    ]
   }
   ```
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Logged in"}`
-  - **Error (401):** `{"status": 401, "error": 401, "messages": {"error": "Invalid ID number or password."}}`
+- **Validation Rules:**
+  - `toId` must natural > 0.
+  - `items.*.bookId` and `items.*.qty` must both be numeric > 0.
+- **Database Target Actions:**
+  - `stockTransferInfo`: Inserts `stfNo` (generated string), `fromLocationId` (active session branch), `toLocationId`, `status` sets to `'PENDING'`, `originType` sets to `'STF'`, `originRef` is null/empty, `preparedBy`, and `remarks`.
+  - `stockTransferLine`: For each item, inserts `bookId`, `qtyExpected` (`qty` from payload), and natively syncs `qtyDelivered` to the exact same value originally. Requires a SQL Transaction.
 
-### `POST /auth/logout`
+#### `POST /warehouse/stf/update`
 
-- **Controller:** `Users\AuthController::logout`
-- **Characteristics:** Unprotected. Destroys the current active session.
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Logged out"}`
+Allows modification on an existing STF. Hard-guarded: Only works on status == `'PENDING'`.
 
----
-
-## 2. Shared Routes
-
-**Route Group Filters:** `auth`, `throttle`
-These routes are protected and available to authenticated users, governed by standard rate limiting.
-
-### `GET /books/search`
-
-- **Controller:** `Shared\BookController::search`
-- **Characteristics:** Fetches a list of books matching the search criteria.
-- **Parameters:** URL Query String
-  - `search` (optional) - String to search for books.
-  - `limit` (optional) - Integer (Defaults to 10).
-- **Output:**
-  - JSON array of `books` transformed through `BooksModel::search()`.
-
-### `GET /payments/list`
-
-- **Controller:** `Shared\PaymentController::payment`
-- **Characteristics:** Retrieves a list of POS payment methods.
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": [{...Payment Object...}]}`
-
-### `GET /branches/list`
-
-- **Controller:** `Shared\BranchController::branch`
-- **Characteristics:** Fetches an alphabetical list of all branches/stores.
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": "success", "data": [{...Branch Object...}]}`
-
----
-
-## 3. User Routes
-
-**Route Group Filters:** `auth`, `throttle`
-
-### `GET /user/me`
-
-- **Controller:** `Users\UserController::me`
-- **Characteristics:** Retrieves the current authenticated user's session data.
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": {...User Object...}}`
-  - **Error (401):** `{"status": 401, "error": 401, "messages": {"error": "Unauthorized"}}`
-
-### `GET /user/branch`
-
-- **Controller:** `Users\UserController::getUserBranch`
-- **Characteristics:** Retrieves the branches assigned to the current user.
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": [{...User Branch Details...}]}`
-
-### `POST /user/branch/activate`
-
-- **Controller:** `Users\UserController::activateBranch`
-- **Characteristics:** Switches the currently active branch for the logged-in user.
-- **Parameters:** JSON Payload
+- **Payload:**
   ```json
   {
-    "branchID": "Branch ID to activate (integer)"
-  }
-  ```
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Branch switched successfully", "data": [{...Updated Branch Details...}]}`
-  - **Error (400):** `{"status": 400, "error": 400, "messages": {"error": "Branch ID is required"}}`
-
----
-
-## 4. Warehouse Routes
-
-**Route Group Prefix:** `warehouse`
-**Filters:** `auth`, `throttle`, `appAccess:WAREHOUSE`
-
-### `Resource /warehouse/departments`
-
-Standard RESTful endpoints to manage departments/branches.
-
-- **`GET /warehouse/departments`**
-  - **Output:** `{"status": 200, "data": [{...Warehouse/Branch Object...}]}`
-- **`GET /warehouse/departments/{id}`**
-  - **Output:** `{"status": 200, "data": {...Warehouse/Branch Object...}}`
-- **`POST /warehouse/departments`**
-  - **Parameters (JSON):** `{"branchstorename": "...", "branchaddress": "...", "branchcontact": "..."}`
-  - **Output:** `{"status": 200, "message": "Deparm created successfully"}`
-- **`PUT/PATCH /warehouse/departments/{id}`**
-  - **Parameters (JSON):** Same as POST.
-  - **Output:** `{"status": 200, "message": "Branch updated successfully"}`
-
-### `GET /warehouse/stf/list`
-
-- **Controller:** `Warehouse\StockTransferController::list`
-- **Characteristics:** Retrieves Stock Transfer Forms (STF). Sets `isOwner` boolean for the frontend.
-- **Parameters:** URL Query String
-  - `status` (optional) - Filters list by status (e.g., PENDING, COMPLETED).
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": [{...STF Data...}]}`
-
-### `GET /warehouse/stf/items`
-
-- **Controller:** `Warehouse\StockTransferController::itemList`
-- **Characteristics:** Retrieves header info and line items for a specific STF.
-- **Parameters:** URL Query String
-  - `stfNo` (required) - The STF Reference Number.
-- **Output:**
-  - **Success (200):** `{"status": 200, "info": {...STF Header...}, "lines": [{...STF Lines...}]}`
-
-### `GET /warehouse/stf/next`
-
-- **Controller:** `Warehouse\StockTransferController::getNextStfNo`
-- **Characteristics:** Generates and retrieves the next available STF reference number (prefix `CB`).
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": "CB-..."}`
-
-### `POST /warehouse/stf/add`
-
-- **Controller:** `Warehouse\StockTransferController::add`
-- **Characteristics:** Creates a new Stock Transfer Request.
-- **Parameters:** JSON Payload
-  ```json
-  {
+    "stfNo": "CB-2023-XXXX",
     "fromId": 1,
     "toId": 2,
-    "remarks": "...",
-    "items": [{ "bookId": 1, "qty": 10 }]
+    "remarks": "Updated text",
+    "items": [{ "bookId": 1205, "qty": 20 }]
   }
   ```
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Stock transfer request added successfully"}`
+- **Action Breakdown:** Updates `stockTransferInfo` fields `fromLocationId`, `toLocationId`, `remarks`. Calculates the item difference: deleted items are removed from DB, missing (new) items are fully inserted setting both `qtyExpected` & `qtyDelivered` directly to `qty`. Existing matching pairs forcefully set `qtyExpected` and `qtyDelivered` equal to the provided payload `qty`.
 
-### `POST /warehouse/stf/update`
+#### `POST /warehouse/stf/generate`
 
-- **Controller:** `Warehouse\StockTransferController::updateStf`
-- **Characteristics:** Updates a `PENDING` STF. Modifies headers, inserts new lines, removes deleted lines, and updates quantities.
-- **Parameters:** JSON Payload
+Generates an STF fulfilling an existing Stock Request (RS).
+
+- **Payload:**
   ```json
   {
-    "stfNo": "CB-...",
-    "fromId": 1,
     "toId": 2,
-    "remarks": "...",
-    "items": [ ... ]
+    "reference": "RS-2023-XXXX", // Origin request ID
+    "remarks": "Fulfillment for stock request.",
+    "items": [{ "bookId": 1205, "qty": 50 }]
   }
   ```
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Successfully updated items!"}`
-  - **Error (422):** Only allowed for PENDING transfers.
+- **Validation Rule Adds:** `reference` field is explicitly required.
+- **Database Action:** Changes parent RS status to `'PROCESSING'`. STF takes `originType` = `'RS'` and `status` = `'PROCESSING'`. STF line operations mimic `stf/add`.
 
-### `GET /warehouse/order/list`
+#### `GET /warehouse/stf/next`
 
-- **Controller:** `Warehouse\StockTransferController::orderList`
-- **Characteristics:** Gets a list of Stock Requests (`PENDING` status mapping to the user's active branch).
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": [{...RS Header Data...}]}`
+Returns simple JSON String representing system sequence (e.g. `CB-0001`).
 
-### `GET /warehouse/order/items`
+### 2.2 Fulfillment Endpoints
 
-- **Controller:** `Warehouse\StockTransferController::orderItems`
-- **Characteristics:** Retrieves a specific Stock Request's header info and line items.
-- **Parameters:** URL Query String
-  - `rsNo` (optional) - The RS number.
-- **Output:**
-  - **Success (200):** `{"status": 200, "info": {...RS Header...}, "lines": [{...RS Lines...}]}`
+#### `GET /warehouse/order/list`
+
+Lists **Pending Requests** aimed toward the Warehouse.
+
+- **Backend Filter Action:** Evaluates `status` == `PENDING` where `toLocationId` is explicitly tracked against the currently logged active user\'s branch location ID logic.
+
+#### `GET /warehouse/order/items`
+
+Looks up an exact origin request context.
+
+- **Query Parameter:** `rsNo`
+- Retrieves the header (`info`) mapping to that RS and array of `stockRequestLineModel` elements (`lines`).
+
+#### `POST /warehouse/fulfillOrder` _(Internal logic within Controller)_
+
+Transacts a manual fulfillment update.
+
+- **Payload:** Explicit array map requiring `stfNo`, and `items` holding `bookId` and current actual `qty` counts to be tracked under `qtyDelivered`.
+- **Action:** Patches actual items array elements within `stockTransferLineModel` setting `qtyDelivered` fields. Moves core header string statuses (`stfNo` and connected `originRef` RS logic) heavily towards a true `PROCESSING` milestone.
 
 ---
 
-## 5. Branches Routes
+## 3. Branches API: RequestStockController
 
-**Route Group Prefix:** `branches`
-**Filters:** `auth`, `throttle`, `appAccess:BRANCHES`
+**Namespace:** `App\Controllers\Branches\RequestStockController`
+**Filter:** `appAccess:BRANCHES`
+**Prefix:** `/branches`
 
-### `GET /branches/inventory`
+Allows regional branches to pull info, generate order forms to main dispatch, and logically verify shipments received.
 
-- **Controller:** `Branches\RequestStockController::inventory`
-- **Characteristics:** Retrieves inventory records for the current active branch with extensive filtering and pagination.
-- **Parameters:** URL Query Strings
-  - `page` (optional) - integer defaults to 1.
-  - `per_page` (optional) - integer defaults to 10.
-  - `search` (optional) - string.
-  - `sort_column` (optional) - integer defaults to 1.
-  - `sort_dir` (optional) - string defaults to 'asc'.
-  - `booktype` (optional) - filters by book type.
-  - `edition_from` / `edition_to` (optional) - filters by edition ranges.
-- **Output:**
-  - **Success (200):** `{"total": 100, "filtered": 10, "page": 1, "per_page": 10, "data": [{...}]}`
+### 3.1 Initial Operations & Lists
 
-### `GET /branches/rs/list`
+#### `GET /branches/inventory`
 
-- **Controller:** `Branches\RequestStockController::list`
-- **Characteristics:** Retrieves Stock Request list associated with the current user's branch. Sets `isOwner` boolean.
-- **Parameters:** URL Query Strings
-  - `from`, `to` (optional) - date filtering.
-  - `status` (optional) - defaults to `PENDING`.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": [{...RS Group Data...}]}`
+Rich list data extracting available book models natively supporting data table interfaces.
 
-### `GET /branches/rs/items`
+- **Query Parameters:** `page`, `per_page` (default 10), `search`, `sort_column`, `sort_dir`, `booktype`, `edition_from`, `edition_to`.
 
-- **Controller:** `Branches\RequestStockController::orderItems`
-- **Characteristics:** Fetches lines and header info for a specific Stock Request.
-- **Parameters:** URL Query String
-  - `rsNo` - Request Stock Reference.
-- **Output:**
-  - **Success (200):** `{"status": 200, "info": {...}, "lines": [{...}]}`
-  - **Error (404):** `Stock request not found`
+#### `GET /branches/rs/list`
 
-### `GET /branches/rs/next`
+Displays past RS forms created dynamically via UI selectors.
 
-- **Controller:** `Branches\RequestStockController::getNextRSNo`
-- **Characteristics:** Generates a new Stock Request reference using the branch's specific warehouse code.
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": "WHCODE..."}`
+- **Query parameters:**
+  - `from` Date
+  - `to` Date
+  - `status` (defaults statically as `PENDING`)
 
-### `POST /branches/rs/add`
+#### `GET /branches/rs/items`
 
-- **Controller:** `Branches\RequestStockController::add`
-- **Characteristics:** Creates a new Stock Request originating from the branch.
-- **Parameters:** JSON Payload
+Same standard structure mapping specific info and arrays.
+
+- **Query Parameters:** `rsNo` (String) Returns JSON matching info & line keys. Returns `404` directly if RS doesn\'t physically exist.
+
+### 3.2 RS Object Modifications
+
+#### `POST /branches/rs/add`
+
+- **Payload Target Elements:**
   ```json
   {
-    "fromId": 1,
-    "toId": 2,
-    "remarks": "...",
-    "items": [{ "bookId": 1, "qty": 10 }]
+    "remarks": "Urgent Request",
+    "items": [{ "bookId": 339, "qty": 5 }]
   }
   ```
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Stock request added successfully"}`
+- **Validation Rules Constraints:** Nested object array tracking requires `items.*.bookId` & `qty` natively resolved beyond `0`. Request demands active session.
+- **Database Action:** Generates tracking `RSNo`. Hardcoded backend override binds `requestToLocationId` to `9` temporarily. Creates lines linking mapped item variables to `qtyRequested`. Creates info bindings with `status` -> `PENDING` and saves user session mapped into `requestedBy`.
 
-### `POST /branches/rs/update`
+#### `POST /branches/rs/update`
 
-- **Controller:** `Branches\RequestStockController::updateRs`
-- **Characteristics:** Truncates existing items for a `PENDING` RS and replaces them with new incoming item lines.
-- **Parameters:** JSON Payload
+Edits existing standard templates without specific delta resolutions. Allows complete clean wipes of an array.
+
+- **Payload Constraint:**
   ```json
   {
-    "rsNo": "WHCODE...",
-    "fromId": 1,
-    "toId": 2,
-    "remarks": "...",
-    "items": [...]
+    "rsNo": "WH-A-001", // Identifier mapping correct header key
+    "remarks": "Needs extra edits",
+    "items": [{ "bookId": 404, "qty": 10 }]
   }
   ```
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Stock request updated successfully"}`
+- **Database Action:** Strictly limits execution against `PENDING` states. Modifies string `remarks`. Completely purges `delete()` matched array components off `rsId` within database, subsequently inserting totally new sequence objects resolving `qtyRequested` correctly per the new payload elements matching.
 
-### `POST /branches/rs/cancel`
+#### `POST /branches/rs/cancel`
 
-- **Controller:** `Branches\RequestStockController::cancelRs`
-- **Characteristics:** Cancels a `PENDING` Stock Request. It cannot be cancelled if it has already been processed or is currently cancelled.
-- **Parameters:** JSON Payload
+Cancels workflow progress dynamically.
+
+- **Payload:** Single `{"rsNo":"ID-String"}` mapping. Rejects elements no longer labeled `'PENDING'`, blocking duplication.
+
+### 3.3 Stock Physical Reception
+
+#### `GET /branches/stocks/incoming`
+
+Finds any `stockTransferInfoModel` specifically marking `toLocationId` == User Active System Branch Location holding STF bounds natively dispatched and traveling outward to them functionally.
+
+#### `POST /branches/stf/save`
+
+Critical API tracking the literal receipt resolution when the truck reaches the branch. Requires explicit line-count tracking verification parameters.
+
+- **Detailed Payload Object:**
   ```json
   {
-    "rsNo": "WHCODE..."
-  }
-  ```
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Stock request cancelled successfully"}`
-
-### `GET /branches/stocks/incoming`
-
-- **Controller:** `Branches\RequestStockController::getIncomingStocks`
-- **Characteristics:** Fetches incoming stock transfers bounded for the user's active branch location.
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": [{...STF Objects...}]}`
-
-### `POST /branches/stf/save`
-
-- **Controller:** `Branches\RequestStockController::saveStfItems`
-- **Characteristics:** Marks STFs and their origin RS references as `COMPLETED`. Updates accepted and rejected quantities per line. Records rejection notes.
-- **Parameters:** JSON Payload
-  ```json
-  {
-    "stfNo": "CB-...",
+    "stfNo": "CB-0002",
     "items": [
       {
-        "bookId": 1,
-        "qtyAccepted": 10,
-        "qtyRejected": 0,
-        "rejectionNote": "..."
+        "bookId": 1205,
+        "qtyAccepted": 12,
+        "qtyRejected": 3,
+        "rejectionNote": "3 books cover damaged in transit."
       }
     ]
   }
   ```
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Stock transfer items saved successfully"}`
+- **Constraint Execution Rules:**
+  - Payload components evaluating `qtyRejected > 0` throw explicit errors rejecting execution without natively mapped `rejectionNote` string element presence.
+  - Rejection limits 0 -> ignore.
+- **Actions Setup:** Triggers dual header updates: Updates `stfNo` status & origin request mapping (`originRef`) `RSNo` to ultimate `COMPLETED`. Updates array lines inserting numeric tracking into DB paths -> `qtyAccepted` & `qtyRejected`.
 
 ---
 
-## 6. Pull Out Request Routes
+## 4. Branches API: PullOutRequestController
 
-**Route Group Prefix:** `branches/po`
-**Filters:** `auth`, `throttle`, `appAccess:BRANCHES`
+**Namespace:** `App\Controllers\Branches\PullOutRequestController`
+**Filter:** `appAccess:BRANCHES`
+**Prefix:** `/branches`
 
-### `GET /branches/po/(:segment)/list`
+Manages Pull-Outs (PO) when a branch returns stock via a dynamically logged movement form back outwards.
 
-- **Controller:** `Branches\PullOutRequestController::list/$1`
-- **Characteristics:** Fetches a paginated list of Pull Out requests either `incoming` or `outgoing`.
-- **Parameters:** URL Route Segment & Query Strings
-  - `Segment` - `incoming` or `outgoing`.
-  - `page`, `per_page`, `search`, `sort_column`, `sort_dir`, `status`, `fromDate`, `toDate`.
-- **Output:**
-  - **Success (200):** `{"total": 10, "filtered": 10, "page": 1, "per_page": 10, "data": [{...}]}`
+### 4.1 Lookup Methods
 
-### `GET /branches/po/next`
+#### `GET /branches/po/incoming/list` (or `/outgoing`)
 
-- **Controller:** `Branches\PullOutRequestController::getNextPoNo`
-- **Characteristics:** Retrieves the next sequential PO number.
-- **Parameters:** None.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": "POX..."}`
+Displays listing tables matching segment path variables dynamically pointing URI filters toward columns `fromLocationId` or `toLocationId`. Uses typical query filters (`search`, `status`, `page`, `fromDate`, `toDate`).
 
-### `GET /branches/po/items`
+#### `GET /branches/po/items`
 
-- **Controller:** `Branches\PullOutRequestController::getPoItemList`
-- **Characteristics:** Retrieves lines for a given Pull Out request.
-- **Parameters:** URL Query String
-  - `poNo` - Required.
-- **Output:**
-  - **Success (200):** `{"status": 200, "data": [{...PO Item lines...}]}`
+Retrieves header mapped object array against specific exact `poNo` string Query Parameters natively mapping JSON `info` & `lines`.
 
-### `POST /branches/po/add`
+### 4.2 Data Mutations
 
-- **Controller:** `Branches\PullOutRequestController::add`
-- **Characteristics:** Submits a new Pull Out request to the server.
-- **Parameters:** JSON Payload
+#### `POST /branches/po/add`
+
+- **JSON Target Elements Tracking:**
   ```json
   {
-    "fromLocationId": 1,
-    "toLocationId": 2,
-    "remarks": "...",
-    "items": [
-      {
-        "bookId": 1,
-        "qtyRequested": 10
-      }
-    ]
+    "fromLocationId": 5,
+    "toLocationId": 9,
+    "remarks": "Seasonal return.",
+    "items": [{ "bookId": 994, "qtyRequested": 40 }]
   }
   ```
-- **Output:**
-  - **Success (200):** `{"status": 200, "message": "Pull Out Request added successfully"}`
+- **Database Rules Check:** Requires Location fields properly declared above zero. Items enforce numeric bounds mapping correctly onto object array limits.
+- **Execution Mapping:** Creates PO info element pushing session metadata directly unto `requestBy` structure. Line inserts map parameter `qtyRequested`. `status` is natively defaulted based on implicit database architecture constraints.
+
+#### `POST /branches/po/fulfill` _(Internal mapped function)_
+
+Closes physical gap on returned inventory objects.
+
+- **Payload Tracking Element Target Object:** Maps main `poNo` directly pointing object array rows carrying keys -> `qtyFulfilled`.
+- **Action Mapping:** Inserts line tracking dynamically onto target `qtyFulfilled` SQL tables bindings. Hard sets primary header sequence directly terminating in `FULFILLED` string status. Explicitly operates using rigid Transaction protection blocks.

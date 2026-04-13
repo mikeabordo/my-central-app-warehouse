@@ -22,6 +22,12 @@
                 <dynamic-data-table :headers="headers" :items="items" :loading="loading"
                   searchPlaceholder="Search items...">
                   <!-- We can add specific scoped slots for items here if needed -->
+                  <!-- Status Badge -->
+                  <template #item-status="item">
+                    <span class="badge badge-danger-light">
+                      {{ item.status }}
+                    </span>
+                  </template>
                   <template #item-actions="item">
                     <div class="actions">
                       <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
@@ -95,4 +101,15 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.badge-danger-light {
+  background-color: rgba(255, 0, 0, 0.12);
+  color: #ff0000;
+}
+</style>

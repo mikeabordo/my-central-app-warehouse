@@ -25,7 +25,7 @@
                   searchPlaceholder="Search items...">
                   <!-- Status Badge -->
                   <template #item-status="item">
-                    <span class="badge badge-warning">
+                    <span class="badge badge-warning-light">
                       {{ item.status }}
                     </span>
                   </template>
@@ -173,10 +173,10 @@ export default {
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 10px;
-  color: #fff;
 }
 
-.badge-warning {
-  background-color: #ff9f43;
+.badge-warning-light {
+  background-color: rgba(255, 159, 67, 0.12);
+  color: #ff9f43;
 }
 </style>

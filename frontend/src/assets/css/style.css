@@ -39308,3 +39308,14 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+/* Print button icon color */
+.btn-outline-info svg {
+  stroke: #0dcaf0;
+  transition: stroke 0.2s ease;
+}
+
+.btn-outline-info:hover svg,
+.btn-outline-info:active svg {
+  stroke: #fff;
+}
