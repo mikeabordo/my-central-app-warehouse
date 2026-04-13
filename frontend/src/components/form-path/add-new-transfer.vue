@@ -59,23 +59,30 @@
                 </div>
             </div>
         </div>
+        <success-modal :visible="successModalVisible" title="Transfer Created"
+            message="The stock transfer request has been successfully created and is now pending."
+            @close="$router.push('/stock-transfer/pending-transfer')"
+            @update:visible="successModalVisible = $event" />
     </div>
 </template>
 
 <script>
 import AddForm from "@/components/form/add-form.vue";
 import api from "@/services/api";
+import SuccessModal from "@/components/modal/success-modal.vue";
 
 export default {
     name: "AddNewTransfer",
     components: {
         AddForm,
+        SuccessModal,
     },
     data() {
         return {
             nextSTFNo: "",
             branchOptions: [],
             loading: false,
+            successModalVisible: false,
         };
     },
     computed: {
@@ -241,7 +248,7 @@ export default {
 
             try {
                 await api.post("/warehouse/stf/add", payload);
-                this.$router.push("/stock-transfer/pending-transfer");
+                this.successModalVisible = true;
             } catch (error) {
                 // `api.js` attaches `status` and `data` to thrown errors; include them for faster backend debugging.
                 console.error("Transfer submission failed:", {

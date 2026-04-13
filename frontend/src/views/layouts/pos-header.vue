@@ -86,7 +86,7 @@
             <!-- /Search -->
 
 
-            <!-- Dropdown Menu with Toggle Button -->
+            <!-- Select Branch Dropdown Menu with Toggle Button -->
             <li class="nav-item dropdown has-arrow main-drop nav-item-toggle-dropdown">
                 <a href="javascript:void(0);" class="dropdown-toggle nav-link select-store" data-bs-toggle="dropdown"
                     data-bs-auto-close="false">
@@ -99,69 +99,15 @@
                         </span>
                     </span>
                 </a>
-                <!-- Dropdown Items -->
+                <!-- Dropdown Items (dynamic from GET /user/branch) -->
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
-                        @click="toggleItemCheckbox('store-01')">
+                    <a v-for="branch in userBranches" :key="branch.id" href="javascript:void(0);"
+                        class="dropdown-item d-flex align-items-center py-2" @click="toggleItemCheckbox(branch.id)">
                         <img src="@/assets/img/store/store-01.png" alt="Store Logo"
                             class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Grocery Alpha</span>
-                        <label class="tgl-mini ms-auto mb-0" @click.stop>
-                            <input type="checkbox" id="store-01" checked>
-                            <div class="fill"></div>
-                            <span class="lbl lbl-inactive">
-                                <span class="dot dot-inactive"></span>
-                                Inactive
-                            </span>
-                            <span class="lbl lbl-active">
-                                <span class="dot dot-active"></span>
-                                Active
-                            </span>
-                        </label>
-                    </a>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
-                        @click="toggleItemCheckbox('store-02')">
-                        <img src="@/assets/img/store/store-02.png" alt="Store Logo"
-                            class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Grocery Apex</span>
-                        <label class="tgl-mini ms-auto mb-0" @click.stop>
-                            <input type="checkbox" id="store-02">
-                            <div class="fill"></div>
-                            <span class="lbl lbl-inactive">
-                                <span class="dot dot-inactive"></span>
-                                Inactive
-                            </span>
-                            <span class="lbl lbl-active">
-                                <span class="dot dot-active"></span>
-                                Active
-                            </span>
-                        </label>
-                    </a>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
-                        @click="toggleItemCheckbox('store-03')">
-                        <img src="@/assets/img/store/store-03.png" alt="Store Logo"
-                            class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Grocery Bevy</span>
-                        <label class="tgl-mini ms-auto mb-0" @click.stop>
-                            <input type="checkbox" id="store-03" checked>
-                            <div class="fill"></div>
-                            <span class="lbl lbl-inactive">
-                                <span class="dot dot-inactive"></span>
-                                Inactive
-                            </span>
-                            <span class="lbl lbl-active">
-                                <span class="dot dot-active"></span>
-                                Active
-                            </span>
-                        </label>
-                    </a>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
-                        @click="toggleItemCheckbox('store-04')">
-                        <img src="@/assets/img/store/store-04.png" alt="Store Logo"
-                            class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Grocery Eden</span>
-                        <label class="tgl-mini ms-auto mb-0" @click.stop>
-                            <input type="checkbox" id="store-04">
+                        <span class="flex-grow-1">{{ branch.branchstorename }}</span>
+                        <label class="tgl-mini ms-auto mb-0" @click.prevent="toggleItemCheckbox(branch.id)">
+                            <input type="checkbox" :id="'branch-' + branch.id" :checked="activeBranchId === branch.id">
                             <div class="fill"></div>
                             <span class="lbl lbl-inactive">
                                 <span class="dot dot-inactive"></span>
@@ -175,7 +121,7 @@
                     </a>
                 </div>
             </li>
-            <!-- Dropdown Menu with Toggle Button -->
+            <!-- /Select Branch Dropdown Menu with Toggle Button -->
 
             <!-- Flag -->
             <li class="nav-item dropdown has-arrow flag-nav nav-item-box">
@@ -371,12 +317,20 @@
 </template>
 
 <script>
+import api from "@/services/api";
 export default {
     data() {
-        return {};
+        return {
+            // Tracks the currently active branch ID — persisted in localStorage to survive reloads
+            activeBranchId: null,
+            // Branches assigned to the current user, fetched from GET /user/branch
+            userBranches: [],
+        };
     },
     mounted() {
         this.initMouseoverListener();
+        this.restoreActiveBranch();
+        this.fetchUserBranches();
     },
     methods: {
         toggleSidebar1() {
@@ -458,10 +412,54 @@ export default {
                 }
             }
         },
-        toggleItemCheckbox(id) {
-            const checkbox = document.getElementById(id);
-            if (checkbox) {
-                checkbox.checked = !checkbox.checked;
+        restoreActiveBranch() {
+            const saved = localStorage.getItem('activeBranchId');
+            if (saved !== null) {
+                this.activeBranchId = parseInt(saved, 10);
+                console.log("[Branch] Restored activeBranchId from localStorage:", this.activeBranchId);
+            }
+        },
+        async fetchUserBranches() {
+            try {
+                const response = await api.get("/user/branch");
+                console.log("[Branch] Raw GET /user/branch response:", response);
+
+                // Extract the array defensively
+                const branches = Array.isArray(response)
+                    ? response
+                    : Array.isArray(response?.data)
+                        ? response.data
+                        : [];
+
+                console.log("[Branch] Available branches from JSON:", branches);
+                branches.forEach((b, i) => {
+                    console.log(`[Branch]   [${i}] id=${b.id}  branchID=${b.branchID}  name="${b.branchstorename}"  status="${b.status}"`);
+                });
+
+                this.userBranches = branches;
+            } catch (error) {
+                console.error("[Branch] Failed to fetch user branches:", error);
+            }
+        },
+        async toggleItemCheckbox(branchID) {
+            console.log(`[Branch Activate] Activating branchID: ${branchID}`);
+            console.log(`[Branch Activate] Sending payload:`, { branchID });
+
+            try {
+                const response = await api.post("/user/branch/activate", { branchID });
+                console.log("[Branch Activate] Response JSON:", response);
+
+                // Persist the active branch ID so the correct toggle stays checked on reload
+                // parseInt ensures we always store/compare as a number (JSON returns numbers, localStorage returns strings)
+                this.activeBranchId = parseInt(branchID, 10);
+                localStorage.setItem('activeBranchId', this.activeBranchId);
+                console.log("[Branch Activate] activeBranchId saved:", this.activeBranchId);
+            } catch (error) {
+                console.error("[Branch Activate] Error:", {
+                    message: error?.message,
+                    status: error?.status,
+                    data: error?.data,
+                });
             }
         },
     },
