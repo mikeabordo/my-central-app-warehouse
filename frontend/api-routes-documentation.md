@@ -104,10 +104,8 @@ Generates an STF fulfilling an existing Stock Request (RS).
 - **Payload:**
   ```json
   {
-    "toId": 2,
     "reference": "RS-2023-XXXX", // Origin request ID
-    "remarks": "Fulfillment for stock request.",
-    "items": [{ "bookId": 1205, "qty": 50 }]
+    "remarks": "Fulfillment for stock request."
   }
   ```
 - **Validation Rule Adds:** `reference` field is explicitly required.

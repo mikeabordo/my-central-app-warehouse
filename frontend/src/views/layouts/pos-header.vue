@@ -416,14 +416,11 @@ export default {
             const saved = localStorage.getItem('activeBranchId');
             if (saved !== null) {
                 this.activeBranchId = parseInt(saved, 10);
-                console.log("[Branch] Restored activeBranchId from localStorage:", this.activeBranchId);
             }
         },
         async fetchUserBranches() {
             try {
                 const response = await api.get("/user/branch");
-                console.log("[Branch] Raw GET /user/branch response:", response);
-
                 // Extract the array defensively
                 const branches = Array.isArray(response)
                     ? response
@@ -431,9 +428,7 @@ export default {
                         ? response.data
                         : [];
 
-                console.log("[Branch] Available branches from JSON:", branches);
                 branches.forEach((b, i) => {
-                    console.log(`[Branch]   [${i}] id=${b.id}  branchID=${b.branchID}  name="${b.branchstorename}"  status="${b.status}"`);
                 });
 
                 this.userBranches = branches;
@@ -442,18 +437,14 @@ export default {
             }
         },
         async toggleItemCheckbox(branchID) {
-            console.log(`[Branch Activate] Activating branchID: ${branchID}`);
-            console.log(`[Branch Activate] Sending payload:`, { branchID });
 
             try {
                 const response = await api.post("/user/branch/activate", { branchID });
-                console.log("[Branch Activate] Response JSON:", response);
 
                 // Persist the active branch ID so the correct toggle stays checked on reload
                 // parseInt ensures we always store/compare as a number (JSON returns numbers, localStorage returns strings)
                 this.activeBranchId = parseInt(branchID, 10);
                 localStorage.setItem('activeBranchId', this.activeBranchId);
-                console.log("[Branch Activate] activeBranchId saved:", this.activeBranchId);
             } catch (error) {
                 console.error("[Branch Activate] Error:", {
                     message: error?.message,

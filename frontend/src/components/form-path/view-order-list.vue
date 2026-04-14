@@ -2,9 +2,10 @@
   <div>
     <layout-header></layout-header>
     <layout-sidebar></layout-sidebar>
+
     <div class="page-wrapper">
       <div class="content">
-        <!-- Breadcrumb -->
+        <!-- Breadcrumb (matches the stock-transfer "backPath/backLabel" pattern) -->
         <nav aria-label="breadcrumb" class="mb-4 d-none d-md-flex">
           <div class="minimal-breadcrumb">
             <router-link :to="backPath" class="mb-item">
@@ -20,12 +21,19 @@
         <!-- Page Header -->
         <div class="page-header justify-content-between">
           <div class="page-title">
-            <h4>View Transfer Details</h4>
+            <h4>View Order Details</h4>
           </div>
-          <div class="page-btn">
+          <div class="page-btn d-flex gap-2">
+            <router-link
+              :to="`/stock-transfer/view/${id}`"
+              class="btn btn-added btn-gradient warm"
+            >
+              <vue-feather type="loader" class="me-2"></vue-feather>Generate
+              Stock No.
+            </router-link>
             <router-link :to="backPath" class="btn btn-added btn-dark">
               <vue-feather type="arrow-left" class="me-2"></vue-feather>Back to
-              {{ backLabel }}
+              Order List
             </router-link>
           </div>
         </div>
@@ -37,6 +45,7 @@
                 <span class="visually-hidden">Loading...</span>
               </div>
             </div>
+
             <view-detail
               v-else
               :item="item"
@@ -62,6 +71,9 @@
                   </div>
                 </div>
               </template>
+              <template #col-qty_requested="row">
+                {{ row.qtyRequested ?? row.qty_requested ?? row.qty ?? "—" }}
+              </template>
             </view-detail>
           </div>
         </div>
@@ -75,19 +87,21 @@ import ViewDetail from "@/components/form/view-item-table.vue";
 import api from "@/services/api";
 
 export default {
-  name: "ViewTransfer",
+  name: "ViewOrderList",
   components: {
     ViewDetail,
   },
   props: {
+    // Used by the breadcrumb/back button; passed via router query just like ViewTransfer.
     backPath: {
       type: String,
-      default: "/stock-transfer/pending-transfer",
+      default: "/branch-fulfillment/order-list",
     },
     backLabel: {
       type: String,
-      default: "Pending Transfer",
+      default: "Order List",
     },
+    // Route param; maps to `rsNo` for the `/warehouse/order/items` endpoint.
     id: {
       type: [String, Number],
       required: true,
@@ -98,43 +112,45 @@ export default {
       loading: false,
       item: {},
       summaryFields: [
-        { label: "Reference No", key: "stfNo" },
-        { label: "From Location", key: "fromBranch" },
-        { label: "To Location", key: "toBranch" },
+        { label: "Reference No", key: "RSNo" },
+        { label: "Origin", key: "fromBranch" },
         { label: "Date Created", key: "createdAt" },
-        { label: "Remarks", key: "remarks" },
+        { label: "Memo", key: "remarks" },
         { label: "Status", key: "status" },
+        { label: "Requested By", key: "fullName" },
       ],
       columns: [
         { label: "Item Key", key: "item_key", width: "30%" },
         { label: "Product Details", key: "product_details", width: "50%" },
-        { label: "Qty", key: "qtyDelivered", width: "20%" },
+        { label: "Qty Requested", key: "qty_requested", width: "20%" },
       ],
       tableItems: [],
     };
   },
   created() {
-    this.fetchTransferDetails();
+    this.fetchOrderDetails();
   },
   methods: {
-    async fetchTransferDetails() {
+    async fetchOrderDetails() {
       this.loading = true;
-      const stfNo = this.id;
+      const rsNo = this.id;
       try {
         const responseData = await api.get(
-          `/warehouse/stf/items?stfNo=${stfNo}`,
+          `/warehouse/order/items?rsNo=${rsNo}`,
         );
 
-        // info is an object, lines is an array
-        if (responseData.info) {
-          this.item = responseData.info;
-        }
-
-        this.tableItems = Array.isArray(responseData.lines)
+        // Response follows the same { info, lines } convention as stock-transfer endpoints.
+        const info = responseData?.info ?? {};
+        // Normalize a couple of common key variants so the summary row stays populated.
+        this.item = {
+          ...info,
+          RSNo: info?.RSNo || info?.rsNo || rsNo,
+        };
+        this.tableItems = Array.isArray(responseData?.lines)
           ? responseData.lines
           : [];
       } catch (error) {
-        console.error("Failed to fetch transfer details:", error);
+        console.error("Failed to fetch order details:", error);
       } finally {
         this.loading = false;
       }
@@ -180,22 +196,5 @@ export default {
   margin: 0 12px;
   color: #abb2ba;
   font-weight: 500;
-}
-
-.badges {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.bg-lightyellow {
-  background-color: #fff8e1;
-  color: #f57f17;
-}
-
-.bg-lightgreen {
-  background-color: #e8f5e9;
-  color: #2e7d32;
 }
 </style>
