@@ -57,7 +57,7 @@
                 <span class="fw-bold text-dark fs-6">{{ row.booktype }}</span
                 >:{{ row.bookitemkey }}
               </template>
-              <template #col-product_details="row">
+              <template #col-book_details="row">
                 <div class="d-flex flex-column gap-1">
                   <span class="fw-bold text-dark fs-6">{{
                     row.title || "—"
@@ -121,7 +121,7 @@ export default {
       ],
       columns: [
         { label: "Item Key", key: "item_key", width: "30%" },
-        { label: "Product Details", key: "product_details", width: "50%" },
+        { label: "Book Details", key: "book_details", width: "50%" },
         { label: "Qty Requested", key: "qty_requested", width: "20%" },
       ],
       tableItems: [],
