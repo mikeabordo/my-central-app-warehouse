@@ -16,12 +16,8 @@
           <div class="col-sm-12">
             <div class="card">
               <div class="card-body">
-                <dynamic-data-table
-                  :headers="headers"
-                  :items="orders"
-                  :loading="loading"
-                  searchPlaceholder="Search orders..."
-                >
+                <dynamic-data-table :headers="headers" :items="orders" :loading="loading"
+                  searchPlaceholder="Search orders...">
                   <template #item-status="{ status }">
                     <span :class="['badge', getStatusBadgeClass(status)]">
                       {{ formatStatus(status) }}
@@ -29,24 +25,18 @@
                   </template>
                   <template #item-action="{ action }">
                     <div class="table-actions d-flex gap-2">
-                      <router-link
-                        :to="{
-                          name: 'view-order-list',
-                          // Prefer RSNo (API expects `rsNo`), but keep fallbacks to avoid breaking older payloads.
-                          params: { id: action?.RSNo || action?.rsNo || action?.id },
-                          query: {
-                            backPath: '/branch-fulfillment/order-list',
-                            backLabel: 'Order List',
-                          },
-                        }"
-                        class="btn btn-sm btn-icon-only btn-outline-secondary"
-                      >
+                      <router-link :to="{
+                        name: 'view-order-list',
+                        // Prefer RSNo (API expects `rsNo`), but keep fallbacks to avoid breaking older payloads.
+                        params: { id: action?.RSNo || action?.rsNo || action?.id },
+                        query: {
+                          backPath: '/branch-fulfillment/order-list',
+                          backLabel: 'Order List',
+                        },
+                      }" class="btn btn-sm btn-icon-only btn-outline-secondary">
                         <vue-feather type="eye" size="14"></vue-feather>
                       </router-link>
-                      <button
-                        class="btn btn-sm btn-icon-only btn-outline-info"
-                        @click="printOrder(action)"
-                      >
+                      <button class="btn btn-sm btn-icon-only btn-outline-info" @click="printOrder(action)">
                         <vue-feather type="printer" size="14"></vue-feather>
                       </button>
                     </div>
@@ -77,7 +67,7 @@ export default {
         { text: "Origin", value: "fromBranch", sortable: true },
         { text: "Status", value: "status", sortable: true },
         { text: "Memo", value: "remarks", sortable: true },
-        { text: "Requested By", value: "fullName", sortable: true },
+        { text: "Requested By", value: "requestedBy", sortable: true },
         { text: "Action", value: "action", sortable: true },
       ],
       orders: [],
@@ -98,8 +88,8 @@ export default {
         const ordersArray = Array.isArray(responseData)
           ? responseData
           : Array.isArray(responseData?.data)
-          ? responseData.data
-          : [];
+            ? responseData.data
+            : [];
 
         // NOTE: `/warehouse/order/list` only returns PENDING requests (per backend behavior),
         // but some payloads may omit `status` or use different casing/keys. We normalize here so the UI
@@ -148,6 +138,7 @@ export default {
   font-size: 12px;
   color: #fff;
 }
+
 .badge-warning {
   background-color: #ff9f43;
 }

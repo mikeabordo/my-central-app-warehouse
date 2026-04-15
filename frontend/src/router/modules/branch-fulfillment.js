@@ -7,6 +7,7 @@ import InTransit from '@/views/pages/branch-fulfillment/in-transit.vue'
 import Delivered from '@/views/pages/branch-fulfillment/delivered.vue'
 
 import ViewOrderList from '@/components/form-path/view-order-list.vue'
+import FulfillOrder from '@/components/form-path/fulfill-order.vue'
 
 export default [
     {
@@ -27,6 +28,16 @@ export default [
                 path: 'view/:id',
                 name: 'view-order-list',
                 component: ViewOrderList,
+                props: route => ({
+                    id: route.params.id,
+                    backPath: route.query.backPath || '/branch-fulfillment/order-list',
+                    backLabel: route.query.backLabel || 'Order List'
+                })
+            },
+            {
+                path: 'fulfill/:id',
+                name: 'fulfill-order',
+                component: FulfillOrder,
                 props: route => ({
                     id: route.params.id,
                     backPath: route.query.backPath || '/branch-fulfillment/order-list',

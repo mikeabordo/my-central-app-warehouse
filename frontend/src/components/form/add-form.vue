@@ -1,76 +1,39 @@
 <template>
   <form @submit.prevent="handleSubmit">
     <!-- Summary info row (optional, for Ref, Locations, etc.) -->
-    <div
-      v-if="summaryFields && summaryFields.length"
-      class="summary-row mb-4 d-flex gap-3"
-    >
+    <div v-if="summaryFields && summaryFields.length" class="summary-row mb-4 d-flex gap-3">
       <div v-for="field in summaryFields" :key="field.key" class="summary-item">
         <div class="summary-card shadow-sm">
           <span class="summary-label">{{ field.label }}</span>
 
           <!-- Editable Card Value -->
           <template v-if="field.type === 'select'">
-            <div
-              class="custom-dropdown"
-              v-click-outside="() => closeSummaryDropdown(field.key)"
-            >
+            <div class="custom-dropdown" v-click-outside="() => closeSummaryDropdown(field.key)">
               <!-- Stop event propagation so other click-outside handlers don't interfere with opening/selecting. -->
-              <div
-                class="dropdown-trigger fw-bold fs-5"
-                @mousedown.stop
-                @click.stop="toggleSummaryDropdown(field.key)"
-              >
+              <div class="dropdown-trigger fw-bold fs-5" @mousedown.stop @click.stop="toggleSummaryDropdown(field.key)">
                 {{ getSelectedLabel(field) || field.placeholder || "Select" }}
-                <vue-feather
-                  type="chevron-down"
-                  size="16"
-                  class="ms-1"
-                ></vue-feather>
+                <vue-feather type="chevron-down" size="16" class="ms-1"></vue-feather>
               </div>
-              <div
-                v-if="openSummaryDropdowns[field.key]"
-                class="dropdown-menu-custom shadow-lg show"
-              >
-                <div
-                  v-if="!field.options || field.options.length === 0"
-                  class="dropdown-item-custom text-muted"
-                  @mousedown.stop
-                  @click.stop
-                >
+              <div v-if="openSummaryDropdowns[field.key]" class="dropdown-menu-custom shadow-lg show">
+                <div v-if="!field.options || field.options.length === 0" class="dropdown-item-custom text-muted"
+                  @mousedown.stop @click.stop>
                   No options available
                 </div>
-                <div
-                  v-else
-                  v-for="opt in field.options"
-                  :key="getOptionValue(opt)"
-                  class="dropdown-item-custom"
-                  @mousedown.stop
-                  @click.stop="selectSummaryOption(field, opt)"
-                >
+                <div v-else v-for="opt in field.options" :key="getOptionValue(opt)" class="dropdown-item-custom"
+                  @mousedown.stop @click.stop="selectSummaryOption(field, opt)">
                   {{ getOptionLabel(opt) }}
                 </div>
               </div>
             </div>
           </template>
           <template v-else-if="field.type === 'textarea'">
-            <textarea
-              v-model="formData[field.key]"
-              class="summary-textarea fw-600 fs-6 shadow-none"
-              style="background: transparent; resize: none"
-              rows="1"
-              :placeholder="field.placeholder || ''"
-            ></textarea>
+            <textarea v-model="formData[field.key]" class="summary-textarea fw-600 fs-6 shadow-none"
+              style="background: transparent; resize: none" rows="1" :placeholder="field.placeholder || ''"></textarea>
           </template>
           <template v-else-if="field.type === 'text'">
-            <input
-              v-model="formData[field.key]"
-              :disabled="field.disabled"
-              class="form-control border-0 p-0 fw-bold fs-5 shadow-none"
-              :class="{ 'text-muted': field.disabled }"
-              style="background: transparent"
-              :placeholder="field.placeholder || ''"
-            />
+            <input v-model="formData[field.key]" :disabled="field.disabled"
+              class="form-control border-0 p-0 fw-bold fs-5 shadow-none" :class="{ 'text-muted': field.disabled }"
+              style="background: transparent" :placeholder="field.placeholder || ''" />
           </template>
           <template v-else>
             <span class="summary-value">{{ formData[field.key] || "—" }}</span>
@@ -81,73 +44,38 @@
     <div class="card shadow-sm border-0">
       <div class="card-body pt-3">
         <div class="row">
-          <div
-            v-for="field in fields"
-            :key="field.key"
-            :class="['mb-3', 'field-wrapper', colClass(field)]"
-          >
+          <div v-for="field in fields" :key="field.key" :class="['mb-3', 'field-wrapper', colClass(field)]">
             <label class="form-label">{{ field.label }}</label>
 
             <!-- ── API Search field ── -->
-            <div
-              v-if="isSearch(field)"
-              class="search-field-wrapper"
-              v-click-outside="() => closeDropdown(field.key)"
-            >
+            <div v-if="isSearch(field)" class="search-field-wrapper" v-click-outside="() => closeDropdown(field.key)">
               <div class="position-relative" style="z-index: 1051">
-                <input
-                  type="text"
-                  class="form-control mb-3"
-                  v-model="searchQueries[field.key]"
-                  :placeholder="field.placeholder || `Search ${field.label}…`"
-                  @input="onSearchInput(field, $event)"
-                  @keydown.escape="closeDropdown(field.key)"
-                  autocomplete="off"
-                />
+                <vue-feather type="search" size="16" class="search-input-icon text-muted"></vue-feather>
+                <input type="text" class="form-control mb-3" v-model="searchQueries[field.key]"
+                  :placeholder="field.placeholder || `Search ${field.label}…`" @input="onSearchInput(field, $event)"
+                  @keydown.escape="closeDropdown(field.key)" autocomplete="off" />
+
                 <!-- Loading spinner inside input -->
-                <div
-                  v-if="searchLoading[field.key]"
-                  class="search-spinner"
-                  style="top: 20px"
-                >
-                  <span
-                    class="spinner-border spinner-border-sm text-secondary"
-                    role="status"
-                  ></span>
+                <div v-if="searchLoading[field.key]" class="search-spinner" style="top: 20px">
+                  <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
                 </div>
 
                 <!-- Results Dropdown -->
-                <div
-                  v-if="
-                    searchResults[field.key] && searchResults[field.key].length
-                  "
-                  class="search-results-dropdown shadow-lg border rounded"
-                >
+                <div v-if="
+                  searchResults[field.key] && searchResults[field.key].length
+                " class="search-results-dropdown shadow-lg border rounded">
                   <ul class="list-unstyled mb-0">
-                    <li
-                      v-for="result in searchResults[field.key]"
-                      :key="getOptionValue(result)"
-                      class="search-result-item p-2 border-bottom"
-                      @click="selectSearchResult(field, result)"
-                    >
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
+                    <li v-for="result in searchResults[field.key]" :key="getOptionValue(result)"
+                      class="search-result-item p-2 border-bottom" @click="selectSearchResult(field, result)">
+                      <div class="d-flex justify-content-between align-items-center">
                         <div class="result-details">
-                          <slot
-                            :name="'col-product_details'"
-                            v-bind="result._raw"
-                          >
+                          <slot :name="'col-product_details'" v-bind="result._raw">
                             <span class="fw-bold">{{
                               getOptionLabel(result)
                             }}</span>
                           </slot>
                         </div>
-                        <vue-feather
-                          type="plus-circle"
-                          size="16"
-                          class="text-primary"
-                        ></vue-feather>
+                        <vue-feather type="plus-circle" size="16" class="text-primary"></vue-feather>
                       </div>
                     </li>
                   </ul>
@@ -155,58 +83,33 @@
               </div>
 
               <!-- No results state (inline) -->
-              <div
-                v-if="searchNoResult[field.key]"
-                class="text-danger small mb-2"
-              >
+              <div v-if="searchNoResult[field.key]" class="text-danger small mb-2">
                 No results found
               </div>
 
               <!-- Selected Items Table -->
-              <div
-                v-if="
-                  selectedItems[field.key] && selectedItems[field.key].length
-                "
-                class="table-responsive border rounded mt-2"
-              >
+              <div v-if="
+                selectedItems[field.key] && selectedItems[field.key].length
+              " class="table-responsive border rounded mt-2">
                 <table class="table table-hover mb-0">
                   <thead class="bg-light">
                     <tr>
-                      <th
-                        v-for="col in field.tableColumns || [
-                          { label: 'Result', key: 'label' },
-                        ]"
-                        :key="col.key"
-                      >
+                      <th v-for="col in field.tableColumns || [
+                        { label: 'Result', key: 'label' },
+                      ]" :key="col.key">
                         {{ col.label }}
                       </th>
                       <th style="width: 80px" class="text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="(item, idx) in selectedItems[field.key]"
-                      :key="idx"
-                    >
-                      <td
-                        v-for="col in field.tableColumns || []"
-                        :key="col.key"
-                      >
+                    <tr v-for="(item, idx) in selectedItems[field.key]" :key="idx">
+                      <td v-for="col in field.tableColumns || []" :key="col.key">
                         <template v-if="col.editable || col.key === 'qty'">
-                          <input
-                            type="number"
-                            v-model.number="item[col.key]"
-                            class="form-control form-control-sm"
-                            style="width: 80px"
-                            min="1"
-                            @input="updateFormData(field)"
-                          />
+                          <input type="number" v-model.number="item[col.key]" class="form-control form-control-sm"
+                            style="width: 80px" min="1" @input="updateFormData(field)" />
                         </template>
-                        <slot
-                          v-else
-                          :name="'col-' + col.key"
-                          v-bind="item._raw"
-                        >
+                        <slot v-else :name="'col-' + col.key" v-bind="item._raw">
                           {{
                             col.key === "label"
                               ? item.label
@@ -215,11 +118,8 @@
                         </slot>
                       </td>
                       <td class="text-center">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger border-0"
-                          @click="removeSelectedItem(field, idx)"
-                        >
+                        <button type="button" class="btn btn-sm btn-outline-danger border-0"
+                          @click="removeSelectedItem(field, idx)">
                           <vue-feather type="trash-2" size="16"></vue-feather>
                         </button>
                       </td>
@@ -230,46 +130,25 @@
             </div>
 
             <!-- ── Dropdown / Select field ── -->
-            <select
-              v-else-if="isDropdown(field)"
-              class="form-select form-control"
-              v-model="formData[field.key]"
-              :disabled="field.disabled || false"
-              :class="{ 'bg-light': field.disabled }"
-            >
+            <select v-else-if="isDropdown(field)" class="form-select form-control" v-model="formData[field.key]"
+              :disabled="field.disabled || false" :class="{ 'bg-light': field.disabled }">
               <option value="" disabled>
                 {{ field.placeholder || `Select ${field.label}` }}
               </option>
-              <option
-                v-for="opt in field.options"
-                :key="getOptionValue(opt)"
-                :value="getOptionValue(opt)"
-              >
+              <option v-for="opt in field.options" :key="getOptionValue(opt)" :value="getOptionValue(opt)">
                 {{ getOptionLabel(opt) }}
               </option>
             </select>
 
             <!-- ── Textarea field ── -->
-            <textarea
-              v-else-if="isTextarea(field)"
-              class="form-control"
-              v-model="formData[field.key]"
-              :rows="field.rows || 3"
-              :disabled="field.disabled || false"
-              :class="{ 'bg-light': field.disabled }"
-              :placeholder="field.placeholder || ''"
-            ></textarea>
+            <textarea v-else-if="isTextarea(field)" class="form-control" v-model="formData[field.key]"
+              :rows="field.rows || 3" :disabled="field.disabled || false" :class="{ 'bg-light': field.disabled }"
+              :placeholder="field.placeholder || ''"></textarea>
 
             <!-- ── Plain input ── -->
-            <input
-              v-else
-              :type="field.type || 'text'"
-              class="form-control"
-              v-model="formData[field.key]"
-              :disabled="field.disabled || false"
-              :class="{ 'bg-light': field.disabled }"
-              :placeholder="field.placeholder || ''"
-            />
+            <input v-else :type="field.type || 'text'" class="form-control" v-model="formData[field.key]"
+              :disabled="field.disabled || false" :class="{ 'bg-light': field.disabled }"
+              :placeholder="field.placeholder || ''" />
           </div>
         </div>
         <!-- end .row -->
@@ -277,16 +156,8 @@
     </div>
 
     <div class="d-flex justify-content-end mb-5">
-      <button
-        type="submit"
-        class="btn btn-submit btn-gradient warm"
-        :disabled="loading"
-      >
-        <span
-          v-if="loading"
-          class="spinner-border spinner-border-sm me-2"
-          role="status"
-        ></span>
+      <button type="submit" class="btn btn-submit btn-gradient warm" :disabled="loading">
+        <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
         {{ submitLabel }}
       </button>
     </div>
@@ -591,6 +462,19 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+}
+
+.search-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.search-field-wrapper .form-control {
+  padding-left: 38px;
 }
 
 /* ── Custom Dropdown for Summary ── */

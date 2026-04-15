@@ -11,10 +11,7 @@
             <h6>Manage Pending Transfer</h6>
           </div>
           <div class="page-btn">
-            <router-link
-              to="/stock-transfer/add-new-transfer"
-              class="btn btn-added btn-gradient warm"
-            >
+            <router-link to="/stock-transfer/add-new-transfer" class="btn btn-added btn-gradient warm">
               <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New
               Transfer
             </router-link>
@@ -25,12 +22,8 @@
           <div class="col-sm-12">
             <div class="card">
               <div class="card-body">
-                <dynamic-data-table
-                  :headers="headers"
-                  :items="items"
-                  :loading="loading"
-                  searchPlaceholder="Search items..."
-                >
+                <dynamic-data-table :headers="headers" :items="items" :loading="loading"
+                  searchPlaceholder="Search items...">
                   <!-- Status Badge -->
                   <template #item-status="item">
                     <span class="badge badge-warning-light">
@@ -41,47 +34,27 @@
                   <!-- Actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
-                      <router-link
-                        :to="{
-                          name: 'view-transfer',
-                          params: { id: item.stfNo },
-                          query: {
-                            backPath: '/stock-transfer/pending-transfer',
-                            backLabel: 'Pending Transfer',
-                          },
-                        }"
-                        class="btn btn-sm btn-icon-only btn-outline-secondary"
-                        title="View"
-                      >
+                      <router-link :to="{
+                        name: 'view-transfer',
+                        params: { id: item.stfNo },
+                        query: {
+                          backPath: '/stock-transfer/pending-transfer',
+                          backLabel: 'Pending Transfer',
+                        },
+                      }" class="btn btn-sm btn-icon-only btn-outline-secondary" title="View">
                         <vue-feather type="eye" size="14"></vue-feather>
                       </router-link>
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-icon-only btn-outline-info"
-                        title="Print"
-                        data-bs-toggle="modal"
-                        data-bs-target="#print-item"
-                        @click="printItem(item)"
-                      >
+                      <button type="button" class="btn btn-sm btn-icon-only btn-outline-info" title="Print"
+                        data-bs-toggle="modal" data-bs-target="#print-item" @click="printItem(item)">
                         <vue-feather type="printer" size="14"></vue-feather>
                       </button>
-                      <router-link
-                        v-if="item.isOwner"
-                        :to="`/stock-transfer/edit/${item.stfNo}`"
-                        class="btn btn-sm btn-icon-only btn-outline-success"
-                        title="Edit"
-                      >
+                      <router-link v-if="item.isOwner" :to="`/stock-transfer/edit/${item.stfNo}`"
+                        class="btn btn-sm btn-icon-only btn-outline-success" title="Edit">
                         <vue-feather type="edit" size="14"></vue-feather>
                       </router-link>
-                      <button
-                        v-if="item.isOwner"
-                        type="button"
-                        class="btn btn-sm btn-icon-only btn-outline-danger"
-                        title="Cancel"
-                        data-bs-toggle="modal"
-                        data-bs-target="#cancel-transfer"
-                        @click="cancelItem(item)"
-                      >
+                      <button v-if="item.isOwner" type="button" class="btn btn-sm btn-icon-only btn-outline-danger"
+                        title="Cancel" data-bs-toggle="modal" data-bs-target="#cancel-transfer"
+                        @click="cancelItem(item)">
                         <vue-feather type="x-circle" size="14"></vue-feather>
                       </button>
                     </div>
@@ -95,24 +68,13 @@
     </div>
   </div>
 
-  <cancel-modal
-    modal-id="cancel-transfer"
-    title="Cancel Transfer"
+  <cancel-modal modal-id="cancel-transfer" title="Cancel Transfer"
     :message="`Are you sure you want to cancel this transfer?`"
-    :details="selectedItem ? `Reference: ${selectedItem.stfNo || ''}` : ''"
-    :item="selectedItem"
-    confirm-label="Yes, cancel"
-    cancel-label="No"
-    @confirm="handleCancelConfirm"
-  />
+    :details="selectedItem ? `Reference: ${selectedItem.stfNo || ''}` : ''" :item="selectedItem"
+    confirm-label="Yes, cancel" cancel-label="No" @confirm="handleCancelConfirm" />
 
   <!-- Print Transfer Modal -->
-  <print-modal
-    modal-id="print-item"
-    :item="selectedItem"
-    title="Stock Transfer Slip"
-    :fields="printFields"
-  />
+  <print-modal modal-id="print-item" :item="selectedItem" title="Stock Transfer Slip" :fields="printFields" />
 </template>
 
 <script>
@@ -136,6 +98,7 @@ export default {
         { text: "#", value: "id", sortable: false },
         { text: "Reference No", value: "stfNo", sortable: true },
         { text: "Location", value: "toBranch", sortable: true },
+        { text: "Origin", value: "originRef", sortable: true },
         { text: "Remarks", value: "remarks", sortable: true },
         { text: "Status", value: "status", sortable: true },
         { text: "Actions", value: "actions", sortable: false },
@@ -160,8 +123,8 @@ export default {
         const allTransfers = Array.isArray(responseData.data)
           ? responseData.data
           : Array.isArray(responseData)
-          ? responseData
-          : [];
+            ? responseData
+            : [];
         this.items = allTransfers.filter(
           (t) => t.status && t.status.toLowerCase() === "pending",
         );

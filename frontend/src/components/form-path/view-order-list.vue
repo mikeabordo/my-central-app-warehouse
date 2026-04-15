@@ -24,16 +24,13 @@
             <h4>View Order Details</h4>
           </div>
           <div class="page-btn d-flex gap-2">
-            <router-link
-              :to="`/stock-transfer/view/${id}`"
-              class="btn btn-added btn-gradient warm"
-            >
-              <vue-feather type="loader" class="me-2"></vue-feather>Generate
-              Stock No.
-            </router-link>
-            <router-link :to="backPath" class="btn btn-added btn-dark">
-              <vue-feather type="arrow-left" class="me-2"></vue-feather>Back to
-              Order List
+            <button type="button" class="btn btn-added btn-gradient warm d-flex align-items-center"
+              :disabled="loading || generatingStf" @click="generateStockNo">
+              <vue-feather type="loader" class="me-2" size="18"></vue-feather>
+              {{ generatingStf ? "Generating..." : "Generate Stock No." }}
+            </button>
+            <router-link :to="backPath" class="btn btn-added btn-dark d-flex align-items-center">
+              <vue-feather type="arrow-left" class="me-2" size="18"></vue-feather>Back to Order List
             </router-link>
           </div>
         </div>
@@ -46,16 +43,9 @@
               </div>
             </div>
 
-            <view-detail
-              v-else
-              :item="item"
-              :summaryFields="summaryFields"
-              :columns="columns"
-              :tableItems="tableItems"
-            >
+            <view-detail v-else :item="item" :summaryFields="summaryFields" :columns="columns" :tableItems="tableItems">
               <template #col-item_key="row">
-                <span class="fw-bold text-dark fs-6">{{ row.booktype }}</span
-                >:{{ row.bookitemkey }}
+                <span class="fw-bold text-dark fs-6">{{ row.booktype }}</span>:{{ row.bookitemkey }}
               </template>
               <template #col-book_details="row">
                 <div class="d-flex flex-column gap-1">
@@ -64,15 +54,13 @@
                   }}</span>
                   <div class="text-secondary small d-flex flex-column">
                     <span v-if="row.author">Author: {{ row.author }}</span>
-                    <span v-if="row.bookedition"
-                      >Edition: {{ row.bookedition }}</span
-                    >
+                    <span v-if="row.bookedition">Edition: {{ row.bookedition }}</span>
                     <span v-if="row.ISBN">ISBN: {{ row.ISBN }}</span>
                   </div>
                 </div>
               </template>
               <template #col-qty_requested="row">
-                {{ row.qtyRequested ?? row.qty_requested ?? row.qty ?? "—" }}
+                {{ row.qtyRequested ?? "—" }}
               </template>
             </view-detail>
           </div>
@@ -110,6 +98,7 @@ export default {
   data() {
     return {
       loading: false,
+      generatingStf: false,
       item: {},
       summaryFields: [
         { label: "Reference No", key: "RSNo" },
@@ -117,7 +106,7 @@ export default {
         { label: "Date Created", key: "createdAt" },
         { label: "Memo", key: "remarks" },
         { label: "Status", key: "status" },
-        { label: "Requested By", key: "fullName" },
+        { label: "Requested By", key: "requestedBy" },
       ],
       columns: [
         { label: "Item Key", key: "item_key", width: "30%" },
@@ -153,6 +142,36 @@ export default {
         console.error("Failed to fetch order details:", error);
       } finally {
         this.loading = false;
+      }
+    },
+    async generateStockNo() {
+      const reference = this.item?.RSNo || this.item?.rsNo || this.id;
+      const payload = {
+        reference,
+        remarks: this.item?.remarks || "",
+      };
+
+      this.generatingStf = true;
+      try {
+        const responseData = await api.post("/warehouse/stf/generate", payload);
+        const stfNo =
+          responseData?.stfNo ||
+          responseData?.info?.stfNo ||
+          responseData?.data?.stfNo ||
+          responseData?.data?.info?.stfNo;
+
+        if (!stfNo) {
+          throw new Error("STF number was not returned by /warehouse/stf/generate.");
+        }
+
+        this.$router.push({
+          path: `/branch-fulfillment/fulfill/${stfNo}`,
+          query: { backPath: this.backPath, backLabel: this.backLabel },
+        });
+      } catch (error) {
+        console.error("Failed to generate STF:", error);
+      } finally {
+        this.generatingStf = false;
       }
     },
   },
