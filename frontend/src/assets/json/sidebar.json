@@ -190,14 +190,6 @@
         "showSubRoute": false
       },
       {
-        "menuValue": "Processing Transfer",
-        "icon": "truck",
-        "route": "/stock-transfer/processing-transfer",
-        "active_link": "/stock-transfer/processing-transfer",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
         "menuValue": "Completed Transfer",
         "icon": "cloud",
         "route": "/stock-transfer/completed-transfer",

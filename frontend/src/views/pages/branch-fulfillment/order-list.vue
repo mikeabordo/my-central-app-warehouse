@@ -78,30 +78,62 @@ export default {
   },
 
   methods: {
+    normalizeStatusValue(status) {
+      return (status ?? "").toString().trim().toLowerCase();
+    },
+    getOrderReference(order) {
+      return order?.RSNo || order?.rsNo || order?.id;
+    },
+    normalizeOrder(order) {
+      const reference = this.getOrderReference(order);
+      const normalizedStatus =
+        this.normalizeStatusValue(order?.status ?? order?.Status) || "pending";
+
+      return {
+        ...order,
+        id: order?.id ?? reference,
+        RSNo: reference,
+        status: normalizedStatus.toUpperCase(),
+        action: order,
+      };
+    },
+    extractOrdersArray(response) {
+      return Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.data?.data)
+            ? response.data.data
+            : [];
+    },
+    mergeOrders(pendingOrders, processingOrders) {
+      const ordersByReference = new Map();
+
+      pendingOrders.forEach((order) => {
+        const normalizedOrder = this.normalizeOrder(order);
+        ordersByReference.set(this.getOrderReference(normalizedOrder), normalizedOrder);
+      });
+
+      // Processing should win if the same RS exists in both endpoint responses.
+      processingOrders.forEach((order) => {
+        const normalizedOrder = this.normalizeOrder(order);
+        ordersByReference.set(this.getOrderReference(normalizedOrder), normalizedOrder);
+      });
+
+      return Array.from(ordersByReference.values());
+    },
     async fetchOrders() {
       this.loading = true;
       try {
-        const response = await api.get("/warehouse/order/list");
-        console.log(response);
-        // Be defensive: API shapes can vary (array payload vs wrapped payload).
-        const responseData = response?.data;
-        const ordersArray = Array.isArray(responseData)
-          ? responseData
-          : Array.isArray(responseData?.data)
-            ? responseData.data
-            : [];
+        const [pendingResponse, processingResponse] = await Promise.all([
+          api.get("/warehouse/order/list?status=pending"),
+          api.get("/warehouse/order/list?status=processing"),
+        ]);
 
-        // NOTE: `/warehouse/order/list` only returns PENDING requests (per backend behavior),
-        // but some payloads may omit `status` or use different casing/keys. We normalize here so the UI
-        // never accidentally shows a "danger" badge due to a mismatch like "PENDING" vs "Pending".
-        //
-        // Ensure the "action" column always has something usable even if the API doesn't provide it.
-        this.orders = ordersArray.map((order) => ({
-          ...order,
-          // This page is ONLY for pending requests; keep a default to prevent blank/unknown UI states.
-          status: order?.status ?? order?.Status ?? "PENDING",
-          action: order,
-        }));
+        this.orders = this.mergeOrders(
+          this.extractOrdersArray(pendingResponse),
+          this.extractOrdersArray(processingResponse),
+        );
       } catch (error) {
         console.error("Failed to fetch orders:", error);
       } finally {
@@ -109,17 +141,20 @@ export default {
       }
     },
 
-    // `/warehouse/order/list` returns pending orders only, so the badge should always be the warning style.
     getStatusBadgeClass(status) {
-      // Keep `status` param to match the slot API, even though we don't use it.
-      void status;
-      return "badge-warning";
+      const normalizedStatus = this.normalizeStatusValue(status);
+
+      if (normalizedStatus === "processing") return "badge-processing-light";
+      if (normalizedStatus === "pending") return "badge-pending-light";
+      return "";
     },
 
     formatStatus(status) {
-      // Display is always "Pending" because the API endpoint returns pending orders only.
-      void status;
-      return "Pending";
+      const normalizedStatus = this.normalizeStatusValue(status);
+
+      if (normalizedStatus === "processing") return "Processing";
+      if (normalizedStatus === "pending") return "Pending";
+      return (status ?? "").toString();
     },
 
     viewOrder(order) {
@@ -136,10 +171,15 @@ export default {
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;
-  color: #fff;
 }
 
-.badge-warning {
-  background-color: #ff9f43;
+.badge-pending-light {
+  background-color: rgba(255, 159, 67, 0.12);
+  color: #ff9f43;
+}
+
+.badge-processing-light {
+  background-color: rgba(24, 144, 255, 0.12);
+  color: #1890ff;
 }
 </style>

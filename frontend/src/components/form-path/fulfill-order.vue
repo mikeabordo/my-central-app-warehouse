@@ -121,7 +121,6 @@ export default {
                 { label: "Date Created", key: "createdAt" },
                 { label: "Memo", key: "remarks" },
                 { label: "Status", key: "status" },
-                { label: "Requested By", key: "requestedBy" },
             ],
             columns: [
                 { label: "Item Key", key: "item_key", width: "25%" },
@@ -157,14 +156,9 @@ export default {
                     ...line,
                     qtyRequested:
                         line.qtyRequested ??
-                        line.qty_requested ??
-                        line.qtyExpected ??
-                        line.qty ??
                         0,
                     qty_fulfilled:
-                        line.qty_fulfilled ??
                         line.qtyDelivered ??
-                        line.qty_delivered ??
                         0,
                 }));
             } catch (error) {

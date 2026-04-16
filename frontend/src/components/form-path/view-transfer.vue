@@ -37,16 +37,9 @@
                 <span class="visually-hidden">Loading...</span>
               </div>
             </div>
-            <view-detail
-              v-else
-              :item="item"
-              :summaryFields="summaryFields"
-              :columns="columns"
-              :tableItems="tableItems"
-            >
+            <view-detail v-else :item="item" :summaryFields="summaryFields" :columns="columns" :tableItems="tableItems">
               <template #col-item_key="row">
-                <span class="fw-bold text-dark fs-6">{{ row.booktype }}</span
-                >:{{ row.bookitemkey }}
+                <span class="fw-bold text-dark fs-6">{{ row.booktype }}</span>:{{ row.bookitemkey }}
               </template>
               <template #col-product_details="row">
                 <div class="d-flex flex-column gap-1">
@@ -55,9 +48,7 @@
                   }}</span>
                   <div class="text-secondary small d-flex flex-column">
                     <span v-if="row.author">Author: {{ row.author }}</span>
-                    <span v-if="row.bookedition"
-                      >Edition: {{ row.bookedition }}</span
-                    >
+                    <span v-if="row.bookedition">Edition: {{ row.bookedition }}</span>
                     <span v-if="row.ISBN">ISBN: {{ row.ISBN }}</span>
                   </div>
                 </div>
@@ -108,7 +99,8 @@ export default {
       columns: [
         { label: "Item Key", key: "item_key", width: "30%" },
         { label: "Product Details", key: "product_details", width: "50%" },
-        { label: "Qty", key: "qtyDelivered", width: "20%" },
+        { label: "Qty Requested", key: "qtyRequested", width: "20%" },
+        { label: "Qty FulFilled", key: "qtyDelivered", width: "20%" },
       ],
       tableItems: [],
     };
@@ -124,6 +116,7 @@ export default {
         const responseData = await api.get(
           `/warehouse/stf/items?stfNo=${stfNo}`,
         );
+        console.log(responseData);
 
         // info is an object, lines is an array
         if (responseData.info) {
@@ -131,7 +124,15 @@ export default {
         }
 
         this.tableItems = Array.isArray(responseData.lines)
-          ? responseData.lines
+          ? responseData.lines.map((line) => ({
+            ...line,
+            qtyRequested:
+              line.qtyRequested ??
+              0,
+            qtyDelivered:
+              line.qtyDelivered ??
+              0,
+          }))
           : [];
       } catch (error) {
         console.error("Failed to fetch transfer details:", error);

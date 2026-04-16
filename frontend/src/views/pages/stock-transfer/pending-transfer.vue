@@ -26,7 +26,7 @@
                   searchPlaceholder="Search items...">
                   <!-- Status Badge -->
                   <template #item-status="item">
-                    <span class="badge badge-warning-light">
+                    <span :class="['badge', getStatusBadgeClass(item.status)]">
                       {{ item.status }}
                     </span>
                   </template>
@@ -108,7 +108,6 @@ export default {
         { label: "Location", key: "toBranch" },
         { label: "Remarks", key: "remarks" },
         { label: "Status", key: "status", uppercase: true },
-        { label: "Requested By", key: "fullName" },
       ],
     };
   },
@@ -125,14 +124,20 @@ export default {
           : Array.isArray(responseData)
             ? responseData
             : [];
-        this.items = allTransfers.filter(
-          (t) => t.status && t.status.toLowerCase() === "pending",
-        );
+        this.items = allTransfers.filter((t) => {
+          const status = (t?.status ?? "").toString().toLowerCase();
+          return status === "pending" || status === "processing";
+        });
       } catch (error) {
         console.error("Failed to fetch pending transfers:", error);
       } finally {
         this.loading = false;
       }
+    },
+    getStatusBadgeClass(status) {
+      const s = (status ?? "").toString().toLowerCase();
+      if (s === "processing") return "badge-processing-light";
+      return "badge-pending-light";
     },
     printItem(item) {
       this.selectedItem = { ...item };
@@ -179,8 +184,13 @@ export default {
   font-size: 10px;
 }
 
-.badge-warning-light {
+.badge-pending-light {
   background-color: rgba(255, 159, 67, 0.12);
   color: #ff9f43;
+}
+
+.badge-processing-light {
+  background-color: rgba(24, 144, 255, 0.12);
+  color: #1890ff;
 }
 </style>
