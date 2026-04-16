@@ -48,7 +48,7 @@
                                 <div class="d-flex flex-column gap-1">
                                     <span class="fw-bold text-dark fs-6">{{
                                         row.title || "—"
-                                        }}</span>
+                                    }}</span>
                                     <div class="text-secondary small d-flex flex-column">
                                         <span v-if="row.author">Author: {{ row.author }}</span>
                                         <span v-if="row.bookedition">Edition: {{ row.bookedition }}</span>
@@ -62,7 +62,7 @@
                         </edit-detail>
                         <div class="d-flex justify-content-end">
                             <button class="btn btn-added btn-gradient warm d-flex align-items-center"
-                                @click="submitFulfillment">
+                                :disabled="loading" @click="submitFulfillment">
                                 <vue-feather type="check-square" class="me-2" size="18"></vue-feather>Submit Fulfillment
                             </button>
                         </div>
@@ -135,6 +135,14 @@ export default {
         this.fetchOrderDetails();
     },
     methods: {
+        normalizeQuantity(value) {
+            const numericValue = Number(value);
+            if (!Number.isFinite(numericValue) || numericValue < 0) {
+                return 0;
+            }
+
+            return numericValue;
+        },
         async fetchOrderDetails() {
             this.loading = true;
             const stfNo = this.id;
@@ -168,7 +176,67 @@ export default {
             }
         },
         async submitFulfillment() {
-            // Additional submit logic goes here
+            const lines = Array.isArray(this.tableItems) ? this.tableItems : [];
+
+            if (!lines.length) {
+                window.Swal?.fire({
+                    icon: "warning",
+                    title: "No items to fulfill",
+                    text: "Add at least one fulfillment line before submitting.",
+                });
+                return;
+            }
+
+            const payload = {
+                ...this.item,
+                stfNo: this.item?.stfNo || this.id,
+                status: "processing",
+                lines: lines.map((line) => ({
+                    ...line,
+                    qtyDelivered: this.normalizeQuantity(
+                        line.qty_fulfilled ?? line.qtyDelivered ?? 0,
+                    ),
+                })),
+            };
+
+            console.group("[FulfillOrder] submitFulfillment");
+            console.log("Route STF id:", this.id);
+            console.log("Current item:", this.item);
+            console.log("Table items:", lines);
+            console.log("POST /warehouse/stf/fulfill payload:", payload);
+
+            this.loading = true;
+            try {
+                const responseData = await api.post("/warehouse/stf/fulfill", payload);
+                console.log("POST /warehouse/stf/fulfill response:", responseData);
+                this.item = {
+                    ...this.item,
+                    status: "processing",
+                };
+
+                await window.Swal?.fire({
+                    icon: "success",
+                    title: "Fulfillment submitted",
+                    text: "The transfer is now marked as processing.",
+                    timer: 1800,
+                    showConfirmButton: false,
+                });
+
+                this.$router.push(this.backPath || "/stock-transfer/pending-transfer");
+            } catch (error) {
+                console.error("Failed to submit fulfillment:", error);
+                console.log("Fulfillment error status:", error?.status);
+                console.log("Fulfillment error data:", error?.data);
+                console.log("Fulfillment error message:", error?.message);
+                window.Swal?.fire({
+                    icon: "error",
+                    title: "Submit failed",
+                    text: error?.data?.message || error?.message || "Unable to submit fulfillment right now.",
+                });
+            } finally {
+                this.loading = false;
+                console.groupEnd();
+            }
         }
     },
 };

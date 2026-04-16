@@ -43,23 +43,51 @@ async function request(endpoint, options = {}) {
     }
 
     try {
+        console.group(`[API] ${config.method || 'GET'} ${url}`);
+        console.log('Request options:', config);
+        if (config.body) {
+            try {
+                console.log('Request body:', JSON.parse(config.body));
+            } catch {
+                console.log('Request body (raw):', config.body);
+            }
+        }
+
         const response = await fetch(url, config);
         const data = await response.json();
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        console.log('Response data:', data);
 
         if (!response.ok) {
             const error = new Error(data.message || 'An error occurred');
             error.status = response.status;
             error.data = data;
+            console.error('API request failed:', {
+                url,
+                method: config.method,
+                status: response.status,
+                data,
+            });
             throw error;
         }
 
         return data;
     } catch (error) {
+        console.error('API request exception:', {
+            url,
+            method: config.method,
+            status: error?.status,
+            message: error?.message,
+            data: error?.data,
+        });
         // Network error or JSON parse error
         if (!error.status) {
             error.message = 'Unable to connect to the server. Please check your connection.';
         }
         throw error;
+    } finally {
+        console.groupEnd();
     }
 }
 

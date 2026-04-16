@@ -24,8 +24,9 @@
             <h4>View Order Details</h4>
           </div>
           <div class="page-btn d-flex gap-2">
-            <button type="button" class="btn btn-added btn-gradient warm d-flex align-items-center"
-              :disabled="loading || generatingStf" @click="generateStockNo">
+            <button v-if="canShowGenerateStockNo" type="button"
+              class="btn btn-added btn-gradient warm d-flex align-items-center" :disabled="loading || generatingStf"
+              @click="generateStockNo">
               <vue-feather type="loader" class="me-2" size="18"></vue-feather>
               {{ generatingStf ? "Generating..." : "Generate Stock No." }}
             </button>
@@ -99,6 +100,7 @@ export default {
     return {
       loading: false,
       generatingStf: false,
+      orderDetailsLoaded: false,
       item: {},
       summaryFields: [
         { label: "Reference No", key: "RSNo" },
@@ -116,12 +118,24 @@ export default {
       tableItems: [],
     };
   },
+  computed: {
+    isProcessingStatus() {
+      return this.normalizeStatusValue(this.item?.status) === "processing";
+    },
+    canShowGenerateStockNo() {
+      return this.orderDetailsLoaded && !this.isProcessingStatus;
+    },
+  },
   created() {
     this.fetchOrderDetails();
   },
   methods: {
+    normalizeStatusValue(status) {
+      return (status ?? "").toString().trim().toLowerCase();
+    },
     async fetchOrderDetails() {
       this.loading = true;
+      this.orderDetailsLoaded = false;
       const rsNo = this.id;
       try {
         const responseData = await api.get(
@@ -138,6 +152,7 @@ export default {
         this.tableItems = Array.isArray(responseData?.lines)
           ? responseData.lines
           : [];
+        this.orderDetailsLoaded = true;
       } catch (error) {
         console.error("Failed to fetch order details:", error);
       } finally {
@@ -145,6 +160,10 @@ export default {
       }
     },
     async generateStockNo() {
+      if (this.isProcessingStatus) {
+        return;
+      }
+
       const reference = this.item?.RSNo || this.item?.rsNo || this.id;
       const payload = {
         reference,
